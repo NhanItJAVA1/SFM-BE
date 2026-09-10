@@ -1,0 +1,25 @@
+# Build
+.vs/
+bin/
+obj/
+
+# Visual Studio
+*.user
+*.suo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local configuration
+appsettings.Development.json
+
+# Logs
+*.log
+
+# Local history
+HISTORY.md
+
+# backups
+ZSM.bak

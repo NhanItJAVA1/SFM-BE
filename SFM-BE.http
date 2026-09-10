@@ -1,0 +1,6 @@
+@SFM_BE_HostAddress = http://localhost:5153
+
+GET {{SFM_BE_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
