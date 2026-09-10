@@ -9,6 +9,10 @@ using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 using SFM_BE.Services.Auth.Models;
 using SFM_BE.Services.Provider;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UserEntity = SFM_BE.Entities.User;
 
 namespace SFM_BE.Services.Auth;

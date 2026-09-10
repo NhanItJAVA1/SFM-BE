@@ -2,7 +2,11 @@ using Google.Apis.Auth;
 using SFM_BE.Enums;
 using SFM_BE.Exceptions;
 using SFM_BE.Services.Auth.Models;
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Provider;
 
@@ -108,10 +112,7 @@ public class GoogleAuthProvider : IExternalAuthProvider
         }
     }
 
-    private static bool IsJwt(string token)
-    {
-        return token.Count(x => x == '.') == 2;
-    }
+    private static bool IsJwt(string token) => System.Linq.Enumerable.Count(token, x => x == '.') == 2;
 
     private sealed class GoogleTokenInfoResponse
     {
