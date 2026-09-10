@@ -1,3 +1,5 @@
+using System;
+
 namespace SFM_BE.Responses;
 
 public class ErrorResponse
