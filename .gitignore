@@ -21,6 +21,7 @@ appsettings.Development.json
 # Local history
 HISTORY.md
 *.md
+!FE_API_DOCS.md
 
 # backups
 ZSM.bak

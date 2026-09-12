@@ -17,7 +17,9 @@ services:
     restart: unless-stopped
 
   be-sfm:
-    image: huynhtrongnhan98/sfm-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: sfm-backend
     ports:
       - "8080:8080"
