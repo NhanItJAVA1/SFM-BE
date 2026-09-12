@@ -4,6 +4,9 @@ using SFM_BE.DTOs.Users;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SFM_BE.Services.User;
 
@@ -32,7 +35,7 @@ public class UserService : IUserService
         return _mapper.Map<List<UserResponseDto>>(users);
     }
 
-    public async Task<UserResponseDto> GetUserAsync(int id)
+    public async Task<UserResponseDto> GetUserAsync(long id)
     {
         var user = await _userRepo.Where(u => u.Id == id)
             .Include(u => u.Role)
@@ -45,7 +48,7 @@ public class UserService : IUserService
         return _mapper.Map<UserResponseDto>(user);
     }
 
-    public async Task UpdateAsync(int id, UpdateUserDto dto)
+    public async Task UpdateAsync(long id, UpdateUserDto dto)
     {
         var user = await _userRepo.Where(u => u.Id == id)
             .FirstOrDefaultAsync();
@@ -62,7 +65,7 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(long id)
     {
         var user = await _userRepo.FindAsync(u => u.Id == id);
 
@@ -73,7 +76,7 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    private async Task EnsureEmailAvailableAsync(int userId, string email)
+    private async Task EnsureEmailAvailableAsync(long userId, string email)
     {
         var exists = await _userRepo.Where(u => u.Email == email && u.Id != userId)
             .AsNoTracking()
