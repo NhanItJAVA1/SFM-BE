@@ -10,13 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs" />
-    <Compile Include="obj\Debug\net10.0\SFM-BE.AssemblyInfo.cs" />
-    <Compile Include="obj\Debug\net10.0\SFM-BE.GlobalUsings.g.cs" />
-    <Compile Include="obj\Debug\net10.0\SFM-BE.MvcApplicationPartsAssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="bin\Debug\net10.0\appsettings.Development.json" />
     <Content Include="bin\Debug\net10.0\appsettings.json" />
     <Content Include="bin\Debug\net10.0\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json" />

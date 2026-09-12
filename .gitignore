@@ -20,6 +20,7 @@ appsettings.Development.json
 
 # Local history
 HISTORY.md
+*.md
 
 # backups
 ZSM.bak

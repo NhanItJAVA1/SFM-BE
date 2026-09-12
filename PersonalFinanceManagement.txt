@@ -1,0 +1,464 @@
+Project PersonalFinanceManagement {
+  database_type: "PostgreSQL"
+  Note: "Personal Finance Management System with AI"
+}
+
+
+// =====================================================
+// USERS & AUTHENTICATION
+// =====================================================
+
+Table users {
+  id bigint [pk, increment]
+  email varchar(255) [not null, unique]
+  password_hash varchar(500) [not null]
+  full_name varchar(150)
+  avatar_url varchar(500)
+  currency varchar(10) [not null, default: 'VND']
+  language varchar(10) [not null, default: 'vi']
+  status varchar(20) [not null, default: 'ACTIVE']
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    email [unique]
+    status
+  }
+
+  Note: "Application users"
+}
+
+
+Table refresh_tokens {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  token_hash varchar(500) [not null]
+  expires_at timestamp [not null]
+  created_at timestamp [not null]
+  revoked_at timestamp
+
+  indexes {
+    user_id
+    expires_at
+  }
+
+  Note: "Hashed refresh tokens for authentication"
+}
+
+
+// =====================================================
+// FINANCIAL ACCOUNTS
+// =====================================================
+
+Table financial_accounts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  name varchar(100) [not null]
+  type varchar(30) [not null]
+  currency varchar(10) [not null, default: 'VND']
+  initial_balance decimal(18,2) [not null, default: 0]
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    type
+    is_active
+  }
+
+  Note: "Cash, bank accounts, e-wallets, credit cards, savings accounts"
+}
+
+
+// =====================================================
+// CATEGORIES
+// =====================================================
+
+Table categories {
+  id bigint [pk, increment]
+  user_id bigint
+  name varchar(100) [not null]
+  type varchar(20) [not null]
+  icon varchar(100)
+  is_default boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    type
+  }
+
+  Note: "System categories have user_id = NULL. User categories have user_id."
+}
+
+
+// =====================================================
+// TRANSACTIONS
+// =====================================================
+
+Table transactions {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  account_id bigint [not null]
+  category_id bigint
+  type varchar(20) [not null]
+  amount decimal(18,2) [not null]
+  description varchar(500)
+  transaction_date timestamp [not null]
+  location varchar(255)
+  is_excluded boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    account_id
+    category_id
+    transaction_date
+    type
+    (user_id, transaction_date)
+  }
+
+  Note: "Income and expense transactions"
+}
+
+
+// =====================================================
+// TRANSACTION ATTACHMENTS
+// =====================================================
+
+Table transaction_attachments {
+  id bigint [pk, increment]
+  transaction_id bigint [not null]
+  file_name varchar(255) [not null]
+  file_url varchar(500) [not null]
+  file_type varchar(50)
+  created_at timestamp [not null]
+
+  indexes {
+    transaction_id
+  }
+
+  Note: "Receipts, invoices and transaction images/files"
+}
+
+
+// =====================================================
+// TRANSFERS
+// =====================================================
+
+Table transfers {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  from_account_id bigint [not null]
+  to_account_id bigint [not null]
+  amount decimal(18,2) [not null]
+  description varchar(500)
+  transfer_date timestamp [not null]
+  created_at timestamp [not null]
+
+  indexes {
+    user_id
+    from_account_id
+    to_account_id
+    transfer_date
+  }
+
+  Note: "Money transfers between financial accounts"
+}
+
+
+// =====================================================
+// BUDGETS
+// =====================================================
+
+Table budgets {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  category_id bigint
+  name varchar(150) [not null]
+  amount decimal(18,2) [not null]
+  start_date date [not null]
+  end_date date [not null]
+  alert_threshold decimal(5,2) [not null, default: 80]
+  is_recurring boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    category_id
+    start_date
+    end_date
+  }
+
+  Note: "User-defined spending budgets"
+}
+
+
+// =====================================================
+// BUDGET ALERTS
+// =====================================================
+
+Table budget_alerts {
+  id bigint [pk, increment]
+  budget_id bigint [not null]
+  threshold decimal(5,2) [not null]
+  current_percentage decimal(5,2) [not null]
+  message varchar(500)
+  is_read boolean [not null, default: false]
+  created_at timestamp [not null]
+
+  indexes {
+    budget_id
+    is_read
+  }
+
+  Note: "Notifications when budget thresholds are reached"
+}
+
+
+// =====================================================
+// INVOICES
+// =====================================================
+
+Table invoices {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  title varchar(200) [not null]
+  amount decimal(18,2) [not null]
+  due_date date [not null]
+  status varchar(30) [not null, default: 'PENDING']
+  description varchar(500)
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    due_date
+    status
+  }
+
+  Note: "Bills and invoices"
+}
+
+
+// =====================================================
+// RECURRING TRANSACTIONS
+// =====================================================
+
+Table recurring_transactions {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  account_id bigint [not null]
+  category_id bigint
+  type varchar(20) [not null]
+  amount decimal(18,2) [not null]
+  description varchar(500)
+  frequency varchar(30) [not null]
+  next_execution_date date [not null]
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    account_id
+    category_id
+    next_execution_date
+    is_active
+  }
+
+  Note: "Recurring income and expenses"
+}
+
+
+// =====================================================
+// DEBT / LOAN
+// =====================================================
+
+Table debts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  name varchar(150) [not null]
+  type varchar(20) [not null]
+  person_name varchar(150)
+  total_amount decimal(18,2) [not null]
+  due_date date
+  status varchar(30) [not null, default: 'ACTIVE']
+  description varchar(500)
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    user_id
+    type
+    status
+    due_date
+  }
+
+  Note: "Borrowed or lent money"
+}
+
+
+Table debt_payments {
+  id bigint [pk, increment]
+  debt_id bigint [not null]
+  amount decimal(18,2) [not null]
+  payment_date timestamp [not null]
+  note varchar(500)
+  created_at timestamp [not null]
+
+  indexes {
+    debt_id
+    payment_date
+  }
+
+  Note: "Payments made toward debts or loans"
+}
+
+
+// =====================================================
+// AI
+// =====================================================
+
+Table ai_analyses {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  transaction_id bigint
+  type varchar(50) [not null]
+  input_data jsonb
+  result_data jsonb
+  confidence_score decimal(5,4)
+  created_at timestamp [not null]
+
+  indexes {
+    user_id
+    transaction_id
+    type
+    created_at
+  }
+
+  Note: "AI classification, receipt extraction, anomaly detection and cash-flow forecasting"
+}
+
+
+Table ai_recommendations {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  type varchar(50) [not null]
+  title varchar(200) [not null]
+  content text [not null]
+  priority varchar(20)
+  is_read boolean [not null, default: false]
+  created_at timestamp [not null]
+
+  indexes {
+    user_id
+    type
+    priority
+    is_read
+    created_at
+  }
+
+  Note: "AI-generated financial recommendations"
+}
+
+
+// =====================================================
+// RELATIONSHIPS
+// =====================================================
+
+// Users -> Authentication
+Ref: users.id < refresh_tokens.user_id
+
+
+// Users -> Financial Accounts
+Ref: users.id < financial_accounts.user_id
+
+
+// Users -> Categories
+Ref: users.id < categories.user_id
+
+
+// Users -> Transactions
+Ref: users.id < transactions.user_id
+
+
+// Financial Account -> Transactions
+Ref: financial_accounts.id < transactions.account_id
+
+
+// Categories -> Transactions
+Ref: categories.id < transactions.category_id
+
+
+// Transactions -> Attachments
+Ref: transactions.id < transaction_attachments.transaction_id
+
+
+// Users -> Transfers
+Ref: users.id < transfers.user_id
+
+
+// Transfers -> Financial Accounts
+Ref: financial_accounts.id < transfers.from_account_id
+Ref: financial_accounts.id < transfers.to_account_id
+
+
+// Users -> Budgets
+Ref: users.id < budgets.user_id
+
+
+// Categories -> Budgets
+Ref: categories.id < budgets.category_id
+
+
+// Budgets -> Alerts
+Ref: budgets.id < budget_alerts.budget_id
+
+
+// Users -> Invoices
+Ref: users.id < invoices.user_id
+
+
+// Users -> Recurring Transactions
+Ref: users.id < recurring_transactions.user_id
+
+
+// Financial Accounts -> Recurring Transactions
+Ref: financial_accounts.id < recurring_transactions.account_id
+
+
+// Categories -> Recurring Transactions
+Ref: categories.id < recurring_transactions.category_id
+
+
+// Users -> Debts
+Ref: users.id < debts.user_id
+
+
+// Debts -> Debt Payments
+Ref: debts.id < debt_payments.debt_id
+
+
+// Users -> AI Analyses
+Ref: users.id < ai_analyses.user_id
+
+
+// Transactions -> AI Analyses
+Ref: transactions.id < ai_analyses.transaction_id
+
+
+// Users -> AI Recommendations
+Ref: users.id < ai_recommendations.user_id
