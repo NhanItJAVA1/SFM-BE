@@ -352,7 +352,7 @@ namespace SFM_BE.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("UserId")
+                    b.Property<long?>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -483,7 +483,7 @@ namespace SFM_BE.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("UserId")
+                    b.Property<long?>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -497,8 +497,6 @@ namespace SFM_BE.Migrations
                     b.HasIndex("Type");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "TransactionDate");
 
                     b.ToTable("Transactions");
                 });
@@ -657,7 +655,7 @@ namespace SFM_BE.Migrations
                     b.HasOne("SFM_BE.Entities.Category", "Category")
                         .WithMany("Budgets")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("SFM_BE.Entities.User", "User")
                         .WithMany("Budgets")
@@ -735,19 +733,15 @@ namespace SFM_BE.Migrations
                     b.HasOne("SFM_BE.Entities.Category", "Category")
                         .WithMany("RecurringTransactions")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("SFM_BE.Entities.User", "User")
+                    b.HasOne("SFM_BE.Entities.User", null)
                         .WithMany("RecurringTransactions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Account");
 
                     b.Navigation("Category");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SFM_BE.Entities.RefreshToken", b =>
@@ -772,19 +766,15 @@ namespace SFM_BE.Migrations
                     b.HasOne("SFM_BE.Entities.Category", "Category")
                         .WithMany("Transactions")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("SFM_BE.Entities.User", "User")
+                    b.HasOne("SFM_BE.Entities.User", null)
                         .WithMany("Transactions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Account");
 
                     b.Navigation("Category");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SFM_BE.Entities.TransactionAttachment", b =>

@@ -111,17 +111,10 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Description).HasMaxLength(500);
             entity.Property(x => x.Location).HasMaxLength(255);
 
-            entity.HasIndex(x => x.UserId);
             entity.HasIndex(x => x.AccountId);
             entity.HasIndex(x => x.CategoryId);
             entity.HasIndex(x => x.TransactionDate);
             entity.HasIndex(x => x.Type);
-            entity.HasIndex(x => new { x.UserId, x.TransactionDate });
-
-            entity.HasOne(x => x.User)
-                .WithMany(x => x.Transactions)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(x => x.Account)
                 .WithMany(x => x.Transactions)
@@ -131,7 +124,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Category)
                 .WithMany(x => x.Transactions)
                 .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<TransactionAttachment>(entity =>
@@ -193,7 +186,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Category)
                 .WithMany(x => x.Budgets)
                 .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<BudgetAlert>(entity =>
@@ -244,16 +237,10 @@ public class AppDbContext : DbContext
                 .HasMaxLength(30)
                 .IsRequired();
 
-            entity.HasIndex(x => x.UserId);
             entity.HasIndex(x => x.AccountId);
             entity.HasIndex(x => x.CategoryId);
             entity.HasIndex(x => x.NextExecutionDate);
             entity.HasIndex(x => x.IsActive);
-
-            entity.HasOne(x => x.User)
-                .WithMany(x => x.RecurringTransactions)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(x => x.Account)
                 .WithMany(x => x.RecurringTransactions)
@@ -263,7 +250,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Category)
                 .WithMany(x => x.RecurringTransactions)
                 .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<Role>(entity =>

@@ -24,18 +24,18 @@ public class TransactionService : ITransactionService
         _transactionRepo = _unitOfWork.GetRepository<TransactionEntity>();
     }
 
-    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId)
+    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long accountId)
     {
-        var transactions = await _transactionRepo.Where(x => x.UserId == userId)
+        var transactions = await _transactionRepo.Where(x => x.AccountId == accountId)
             .AsNoTracking()
             .ToListAsync();
 
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
 
-    public async Task<TransactionResponseDto> GetTransactionAsync(long userId, long id)
+    public async Task<TransactionResponseDto> GetTransactionAsync(long accountId, long id)
     {
-        var transaction = await _transactionRepo.Where(x => x.UserId == userId && x.Id == id)
+        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
 
@@ -45,10 +45,10 @@ public class TransactionService : ITransactionService
         return _mapper.Map<TransactionResponseDto>(transaction);
     }
 
-    public async Task CreateAsync(long userId, CreateTransactionDto dto)
+    public async Task CreateAsync(long accountId, CreateTransactionDto dto)
     {
         var transaction = _mapper.Map<TransactionEntity>(dto);
-        transaction.UserId = userId;
+        transaction.AccountId = accountId;
         transaction.CreatedAt = System.DateTime.UtcNow;
         transaction.UpdatedAt = System.DateTime.UtcNow;
 
@@ -57,9 +57,9 @@ public class TransactionService : ITransactionService
 
     }
 
-    public async Task UpdateAsync(long userId, long id, UpdateTransactionDto dto)
+    public async Task UpdateAsync(long accountId    , long id, UpdateTransactionDto dto)
     {
-        var transaction = await _transactionRepo.Where(x => x.UserId == userId && x.Id == id)
+        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .FirstOrDefaultAsync();
 
         if (transaction == null)
@@ -71,9 +71,9 @@ public class TransactionService : ITransactionService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteAsync(long accountId, long id)
     {
-        var transaction = await _transactionRepo.Where(x => x.UserId == userId && x.Id == id)
+        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .FirstOrDefaultAsync();
 
         if (transaction == null)

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using SFM_BE.DTOs.RecurringTransactions;
 using SFM_BE.Entities;
 using SFM_BE.Exceptions;
@@ -23,18 +24,18 @@ public class RecurringTransactionService : IRecurringTransactionService
         _recurringRepo = _unitOfWork.GetRepository<RecurringTransaction>();
     }
 
-    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long userId)
+    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long accountId)
     {
-        var items = await _recurringRepo.Where(x => x.UserId == userId)
+        var items = await _recurringRepo.Where(x => x.AccountId == accountId)
             .AsNoTracking()
             .ToListAsync();
 
         return _mapper.Map<List<RecurringTransactionResponseDto>>(items);
     }
 
-    public async Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long userId, long id)
+    public async Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long accountId, long id)
     {
-        var item = await _recurringRepo.Where(x => x.UserId == userId && x.Id == id)
+        var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
 
@@ -44,10 +45,10 @@ public class RecurringTransactionService : IRecurringTransactionService
         return _mapper.Map<RecurringTransactionResponseDto>(item);
     }
 
-    public async Task CreateAsync(long userId, CreateRecurringTransactionDto dto)
+    public async Task CreateAsync(long accountId, CreateRecurringTransactionDto dto)
     {
         var item = _mapper.Map<RecurringTransaction>(dto);
-        item.UserId = userId;
+        item.AccountId = accountId;
         item.CreatedAt = System.DateTime.UtcNow;
         item.UpdatedAt = System.DateTime.UtcNow;
 
@@ -56,9 +57,9 @@ public class RecurringTransactionService : IRecurringTransactionService
 
     }
 
-    public async Task UpdateAsync(long userId, long id, UpdateRecurringTransactionDto dto)
+    public async Task UpdateAsync(long accountId, long id, UpdateRecurringTransactionDto dto)
     {
-        var item = await _recurringRepo.Where(x => x.UserId == userId && x.Id == id)
+        var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .FirstOrDefaultAsync();
 
         if (item == null)
@@ -70,9 +71,9 @@ public class RecurringTransactionService : IRecurringTransactionService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteAsync(long accountId, long id)
     {
-        var item = await _recurringRepo.Where(x => x.UserId == userId && x.Id == id)
+        var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .FirstOrDefaultAsync();
 
         if (item == null)

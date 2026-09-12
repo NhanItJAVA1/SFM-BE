@@ -8,7 +8,6 @@ public class Transaction
 {
     public long Id { get; set; }
 
-    public long UserId { get; set; }
 
     public long AccountId { get; set; }
 
@@ -31,8 +30,6 @@ public class Transaction
     public DateTime? UpdatedAt { get; set; }
 
     public DateTime? DeletedAt { get; set; }
-
-    public User User { get; set; } = null!;
 
     public FinancialAccount Account { get; set; } = null!;
 

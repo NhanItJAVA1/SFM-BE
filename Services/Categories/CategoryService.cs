@@ -15,12 +15,18 @@ public class CategoryService : ICategoryService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IGenericRepository<Category> _categoryRepo;
+    private readonly IGenericRepository<Budget> _budgetRepo;
+    private readonly IGenericRepository<RecurringTransaction> _recurringTransactionRepo;
+    private readonly IGenericRepository<Transaction> _transactionRepo;
 
-    public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
+    public CategoryService(IUnitOfWork unitOfWork, IMapper mapper )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _categoryRepo = _unitOfWork.GetRepository<Category>();
+        _budgetRepo = _unitOfWork.GetRepository<Budget>();
+        _recurringTransactionRepo = _unitOfWork.GetRepository<RecurringTransaction>();
+        _transactionRepo = _unitOfWork.GetRepository<Transaction>();
     }
 
     public async Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId)
@@ -77,6 +83,15 @@ public class CategoryService : ICategoryService
 
         if (category == null)
             throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+
+        await _budgetRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
+         .SetProperty(b => b.CategoryId, (long?)null));
+
+        await _recurringTransactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
+            .SetProperty(r => r.CategoryId, (long?)null));
+
+        await _transactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
+            .SetProperty(r => r.CategoryId, (long?)null));
 
         category.DeletedAt = System.DateTime.UtcNow;
 
