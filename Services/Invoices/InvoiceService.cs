@@ -45,7 +45,7 @@ public class InvoiceService : IInvoiceService
         return _mapper.Map<InvoiceResponseDto>(invoice);
     }
 
-    public async Task<InvoiceResponseDto> CreateAsync(long userId, CreateInvoiceDto dto)
+    public async Task CreateAsync(long userId, CreateInvoiceDto dto)
     {
         var invoice = _mapper.Map<Invoice>(dto);
         invoice.UserId = userId;
@@ -56,7 +56,6 @@ public class InvoiceService : IInvoiceService
         await _invoiceRepo.CreateAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<InvoiceResponseDto>(invoice);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateInvoiceDto dto)
@@ -70,7 +69,6 @@ public class InvoiceService : IInvoiceService
         _mapper.Map(dto, invoice);
         invoice.UpdatedAt = System.DateTime.UtcNow;
 
-        await _invoiceRepo.UpdateAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -84,7 +82,7 @@ public class InvoiceService : IInvoiceService
 
         invoice.DeletedAt = System.DateTime.UtcNow;
 
-        await _invoiceRepo.UpdateAsync(invoice);
+        await _invoiceRepo.DeleteAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
     }
 }

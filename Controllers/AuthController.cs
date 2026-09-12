@@ -37,6 +37,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             result.AccessToken,
+            result.RefreshToken,
             result.User
         });
     }

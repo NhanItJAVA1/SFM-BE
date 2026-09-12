@@ -44,7 +44,7 @@ public class CategoryService : ICategoryService
         return _mapper.Map<CategoryResponseDto>(category);
     }
 
-    public async Task<CategoryResponseDto> CreateAsync(long userId, CreateCategoryDto dto)
+    public async Task CreateAsync(long userId, CreateCategoryDto dto)
     {
         var category = _mapper.Map<Category>(dto);
         category.UserId = userId;
@@ -54,7 +54,6 @@ public class CategoryService : ICategoryService
         await _categoryRepo.CreateAsync(category);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<CategoryResponseDto>(category);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateCategoryDto dto)
@@ -68,7 +67,6 @@ public class CategoryService : ICategoryService
         _mapper.Map(dto, category);
         category.UpdatedAt = System.DateTime.UtcNow;
 
-        await _categoryRepo.UpdateAsync(category);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -82,7 +80,7 @@ public class CategoryService : ICategoryService
 
         category.DeletedAt = System.DateTime.UtcNow;
 
-        await _categoryRepo.UpdateAsync(category);
+        await _categoryRepo.DeleteAsync(category);
         await _unitOfWork.SaveChangesAsync();
     }
 }

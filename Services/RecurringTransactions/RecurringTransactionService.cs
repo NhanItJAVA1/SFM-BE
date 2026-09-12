@@ -44,7 +44,7 @@ public class RecurringTransactionService : IRecurringTransactionService
         return _mapper.Map<RecurringTransactionResponseDto>(item);
     }
 
-    public async Task<RecurringTransactionResponseDto> CreateAsync(long userId, CreateRecurringTransactionDto dto)
+    public async Task CreateAsync(long userId, CreateRecurringTransactionDto dto)
     {
         var item = _mapper.Map<RecurringTransaction>(dto);
         item.UserId = userId;
@@ -54,7 +54,6 @@ public class RecurringTransactionService : IRecurringTransactionService
         await _recurringRepo.CreateAsync(item);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<RecurringTransactionResponseDto>(item);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateRecurringTransactionDto dto)
@@ -68,7 +67,6 @@ public class RecurringTransactionService : IRecurringTransactionService
         _mapper.Map(dto, item);
         item.UpdatedAt = System.DateTime.UtcNow;
 
-        await _recurringRepo.UpdateAsync(item);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -83,7 +81,7 @@ public class RecurringTransactionService : IRecurringTransactionService
         item.DeletedAt = System.DateTime.UtcNow;
         item.IsActive = false;
 
-        await _recurringRepo.UpdateAsync(item);
+        await _recurringRepo.DeleteAsync(item);
         await _unitOfWork.SaveChangesAsync();
     }
 }

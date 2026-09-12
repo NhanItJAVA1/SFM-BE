@@ -44,7 +44,7 @@ public class BudgetService : IBudgetService
         return _mapper.Map<BudgetResponseDto>(budget);
     }
 
-    public async Task<BudgetResponseDto> CreateAsync(long userId, CreateBudgetDto dto)
+    public async Task CreateAsync(long userId, CreateBudgetDto dto)
     {
         var budget = _mapper.Map<Budget>(dto);
         budget.UserId = userId;
@@ -54,7 +54,6 @@ public class BudgetService : IBudgetService
         await _budgetRepo.CreateAsync(budget);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<BudgetResponseDto>(budget);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateBudgetDto dto)
@@ -68,7 +67,6 @@ public class BudgetService : IBudgetService
         _mapper.Map(dto, budget);
         budget.UpdatedAt = System.DateTime.UtcNow;
 
-        await _budgetRepo.UpdateAsync(budget);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -82,7 +80,7 @@ public class BudgetService : IBudgetService
 
         budget.DeletedAt = System.DateTime.UtcNow;
 
-        await _budgetRepo.UpdateAsync(budget);
+        await _budgetRepo.DeleteAsync(budget);
         await _unitOfWork.SaveChangesAsync();
     }
 }

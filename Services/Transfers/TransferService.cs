@@ -44,7 +44,7 @@ public class TransferService : ITransferService
         return _mapper.Map<TransferResponseDto>(transfer);
     }
 
-    public async Task<TransferResponseDto> CreateAsync(long userId, CreateTransferDto dto)
+    public async Task CreateAsync(long userId, CreateTransferDto dto)
     {
         var transfer = _mapper.Map<Transfer>(dto);
         transfer.UserId = userId;
@@ -52,8 +52,6 @@ public class TransferService : ITransferService
 
         await _transferRepo.CreateAsync(transfer);
         await _unitOfWork.SaveChangesAsync();
-
-        return _mapper.Map<TransferResponseDto>(transfer);
     }
 
     public async Task DeleteAsync(long userId, long id)

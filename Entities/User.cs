@@ -6,7 +6,7 @@ namespace SFM_BE.Entities;
 
 public class User
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Username { get; set; } = string.Empty;
 

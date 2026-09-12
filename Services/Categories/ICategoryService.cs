@@ -10,7 +10,7 @@ public interface ICategoryService
 
     Task<CategoryResponseDto> GetCategoryAsync(long userId, long id);
 
-    Task<CategoryResponseDto> CreateAsync(long userId, CreateCategoryDto dto);
+    Task CreateAsync(long userId, CreateCategoryDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateCategoryDto dto);
 

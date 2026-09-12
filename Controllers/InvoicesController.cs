@@ -35,8 +35,8 @@ public class InvoicesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateInvoice(CreateInvoiceDto dto)
     {
-        var result = await _invoiceService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _invoiceService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpPut("{id:long}")]

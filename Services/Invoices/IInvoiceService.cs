@@ -10,7 +10,7 @@ public interface IInvoiceService
 
     Task<InvoiceResponseDto> GetInvoiceAsync(long userId, long id);
 
-    Task<InvoiceResponseDto> CreateAsync(long userId, CreateInvoiceDto dto);
+    Task CreateAsync(long userId, CreateInvoiceDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateInvoiceDto dto);
 

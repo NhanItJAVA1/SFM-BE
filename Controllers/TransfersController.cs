@@ -35,8 +35,8 @@ public class TransfersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTransfer(CreateTransferDto dto)
     {
-        var result = await _transferService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _transferService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpDelete("{id:long}")]

@@ -44,7 +44,7 @@ public class FinancialAccountService : IFinancialAccountService
         return _mapper.Map<FinancialAccountResponseDto>(account);
     }
 
-    public async Task<FinancialAccountResponseDto> CreateAsync(long userId, CreateFinancialAccountDto dto)
+    public async Task CreateAsync(long userId, CreateFinancialAccountDto dto)
     {
         var account = _mapper.Map<FinancialAccount>(dto);
         account.UserId = userId;
@@ -54,7 +54,6 @@ public class FinancialAccountService : IFinancialAccountService
         await _accountRepo.CreateAsync(account);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<FinancialAccountResponseDto>(account);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateFinancialAccountDto dto)
@@ -68,7 +67,6 @@ public class FinancialAccountService : IFinancialAccountService
         _mapper.Map(dto, account);
         account.UpdatedAt = System.DateTime.UtcNow;
 
-        await _accountRepo.UpdateAsync(account);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -83,7 +81,7 @@ public class FinancialAccountService : IFinancialAccountService
         account.DeletedAt = System.DateTime.UtcNow;
         account.IsActive = false;
 
-        await _accountRepo.UpdateAsync(account);
+        await _accountRepo.DeleteAsync(account);
         await _unitOfWork.SaveChangesAsync();
     }
 }

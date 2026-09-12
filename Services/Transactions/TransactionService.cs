@@ -45,7 +45,7 @@ public class TransactionService : ITransactionService
         return _mapper.Map<TransactionResponseDto>(transaction);
     }
 
-    public async Task<TransactionResponseDto> CreateAsync(long userId, CreateTransactionDto dto)
+    public async Task CreateAsync(long userId, CreateTransactionDto dto)
     {
         var transaction = _mapper.Map<TransactionEntity>(dto);
         transaction.UserId = userId;
@@ -55,7 +55,6 @@ public class TransactionService : ITransactionService
         await _transactionRepo.CreateAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<TransactionResponseDto>(transaction);
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateTransactionDto dto)
@@ -69,7 +68,6 @@ public class TransactionService : ITransactionService
         _mapper.Map(dto, transaction);
         transaction.UpdatedAt = System.DateTime.UtcNow;
 
-        await _transactionRepo.UpdateAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -83,7 +81,7 @@ public class TransactionService : ITransactionService
 
         transaction.DeletedAt = System.DateTime.UtcNow;
 
-        await _transactionRepo.UpdateAsync(transaction);
+        await _transactionRepo.DeleteAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
     }
 }

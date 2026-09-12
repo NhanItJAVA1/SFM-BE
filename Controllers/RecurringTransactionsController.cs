@@ -35,8 +35,8 @@ public class RecurringTransactionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRecurringTransaction(CreateRecurringTransactionDto dto)
     {
-        var result = await _recurringTransactionService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _recurringTransactionService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpPut("{id:long}")]

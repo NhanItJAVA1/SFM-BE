@@ -10,7 +10,7 @@ public interface IBudgetService
 
     Task<BudgetResponseDto> GetBudgetAsync(long userId, long id);
 
-    Task<BudgetResponseDto> CreateAsync(long userId, CreateBudgetDto dto);
+    Task CreateAsync(long userId, CreateBudgetDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateBudgetDto dto);
 

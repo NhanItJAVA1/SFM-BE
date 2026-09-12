@@ -35,8 +35,8 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTransaction(CreateTransactionDto dto)
     {
-        var result = await _transactionService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _transactionService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpPut("{id:long}")]

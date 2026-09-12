@@ -10,7 +10,7 @@ public interface ITransferService
 
     Task<TransferResponseDto> GetTransferAsync(long userId, long id);
 
-    Task<TransferResponseDto> CreateAsync(long userId, CreateTransferDto dto);
+    Task CreateAsync(long userId, CreateTransferDto dto);
 
     Task DeleteAsync(long userId, long id);
 }

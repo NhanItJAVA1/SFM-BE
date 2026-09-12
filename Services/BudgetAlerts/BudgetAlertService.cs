@@ -45,7 +45,6 @@ public class BudgetAlertService : IBudgetAlertService
 
         alert.IsRead = true;
 
-        await _alertRepo.UpdateAsync(alert);
         await _unitOfWork.SaveChangesAsync();
     }
 }

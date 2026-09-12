@@ -10,7 +10,7 @@ public interface IRecurringTransactionService
 
     Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long userId, long id);
 
-    Task<RecurringTransactionResponseDto> CreateAsync(long userId, CreateRecurringTransactionDto dto);
+    Task CreateAsync(long userId, CreateRecurringTransactionDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateRecurringTransactionDto dto);
 

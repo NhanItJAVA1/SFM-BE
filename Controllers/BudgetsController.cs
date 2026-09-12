@@ -35,8 +35,8 @@ public class BudgetsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateBudget(CreateBudgetDto dto)
     {
-        var result = await _budgetService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _budgetService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpPut("{id:long}")]

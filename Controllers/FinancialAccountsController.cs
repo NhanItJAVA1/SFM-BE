@@ -35,8 +35,8 @@ public class FinancialAccountsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateAccount(CreateFinancialAccountDto dto)
     {
-        var result = await _accountService.CreateAsync(GetUserId(), dto);
-        return Ok(result);
+        await _accountService.CreateAsync(GetUserId(), dto);
+        return Ok();
     }
 
     [HttpPut("{id:long}")]

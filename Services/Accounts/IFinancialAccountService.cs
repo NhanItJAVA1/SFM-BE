@@ -10,7 +10,7 @@ public interface IFinancialAccountService
 
     Task<FinancialAccountResponseDto> GetAccountAsync(long userId, long id);
 
-    Task<FinancialAccountResponseDto> CreateAsync(long userId, CreateFinancialAccountDto dto);
+    Task CreateAsync(long userId, CreateFinancialAccountDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateFinancialAccountDto dto);
 

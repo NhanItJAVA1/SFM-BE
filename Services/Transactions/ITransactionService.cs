@@ -10,7 +10,7 @@ public interface ITransactionService
 
     Task<TransactionResponseDto> GetTransactionAsync(long userId, long id);
 
-    Task<TransactionResponseDto> CreateAsync(long userId, CreateTransactionDto dto);
+    Task CreateAsync(long userId, CreateTransactionDto dto);
 
     Task UpdateAsync(long userId, long id, UpdateTransactionDto dto);
 
