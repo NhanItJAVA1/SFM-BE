@@ -36,19 +36,14 @@ public class TransferService : ITransferService
     {
         var transfer = await _transferRepo.Where(x => x.UserId == userId && x.Id == id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (transfer == null)
-            throw new NotFoundException("Transfer not found", "TRANSFER_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Transfer not found", "TRANSFER_NOT_FOUND");
 
         return _mapper.Map<TransferResponseDto>(transfer);
     }
 
     public async Task CreateAsync(long userId, CreateTransferDto dto)
     {
-        var transfer = _mapper.Map<Transfer>(dto);
-        transfer.UserId = userId;
-        transfer.CreatedAt = System.DateTime.UtcNow;
+        var transfer = _mapper.Map<Transfer>(dto, opt => opt.Items["UserId"] = userId);
 
         await _transferRepo.CreateAsync(transfer);
         await _unitOfWork.SaveChangesAsync();
@@ -56,13 +51,7 @@ public class TransferService : ITransferService
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var transfer = await _transferRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (transfer == null)
+        if (await _transferRepo.DeleteAsync(x => x.UserId == userId && x.Id == id) == 0)
             throw new NotFoundException("Transfer not found", "TRANSFER_NOT_FOUND");
-
-        await _transferRepo.DeleteAsync(transfer);
-        await _unitOfWork.SaveChangesAsync();
     }
 }

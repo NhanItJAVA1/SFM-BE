@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Repositories.Generic;
 
@@ -24,10 +22,11 @@ public interface IGenericRepository<T>
     Task CreateRangeAsync(IEnumerable<T> items);
 
     Task<T> UpdateAsync(T item);
-
+    Task<int> UpdateAsync(Expression<Func<T, bool>> predicate, Action<UpdateSettersBuilder<T>> set);
     Task UpdateRangeAsync(IEnumerable<T> items);
 
-    Task DeleteAsync(T item);
+    void Delete(T item);
+    Task<int> DeleteAsync(Expression<Func<T, bool>> predicate);
 
     void DeleteRange(IEnumerable<T> entities);
 

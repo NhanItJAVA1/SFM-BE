@@ -36,51 +36,36 @@ public class BudgetService : IBudgetService
     {
         var budget = await _budgetRepo.Where(x => x.UserId == userId && x.Id == id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (budget == null)
-            throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");            
 
         return _mapper.Map<BudgetResponseDto>(budget);
     }
 
     public async Task CreateAsync(long userId, CreateBudgetDto dto)
     {
-        var budget = _mapper.Map<Budget>(dto);
-        budget.UserId = userId;
-        budget.CreatedAt = System.DateTime.UtcNow;
-        budget.UpdatedAt = System.DateTime.UtcNow;
+        var budget = _mapper.Map<Budget>(dto, opt => opt.Items["UserId"] = userId);
 
         await _budgetRepo.CreateAsync(budget);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateBudgetDto dto)
     {
         var budget = await _budgetRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (budget == null)
-            throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");            
 
         _mapper.Map(dto, budget);
-        budget.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var budget = await _budgetRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (budget == null)
-            throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");
-
-        budget.DeletedAt = System.DateTime.UtcNow;
-
-        await _budgetRepo.DeleteAsync(budget);
-        await _unitOfWork.SaveChangesAsync();
+        if (await _budgetRepo.UpdateAsync(
+            x => x.UserId == userId && x.Id == id,
+            s =>
+            {
+                s.SetProperty(x => x.DeletedAt, System.DateTime.UtcNow);
+            }) == 0)
+            throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
     }
 }

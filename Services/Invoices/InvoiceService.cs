@@ -37,52 +37,36 @@ public class InvoiceService : IInvoiceService
     {
         var invoice = await _invoiceRepo.Where(x => x.UserId == userId && x.Id == id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (invoice == null)
-            throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
 
         return _mapper.Map<InvoiceResponseDto>(invoice);
     }
 
     public async Task CreateAsync(long userId, CreateInvoiceDto dto)
     {
-        var invoice = _mapper.Map<Invoice>(dto);
-        invoice.UserId = userId;
-        invoice.Status = InvoiceStatus.Pending;
-        invoice.CreatedAt = System.DateTime.UtcNow;
-        invoice.UpdatedAt = System.DateTime.UtcNow;
+        var invoice = _mapper.Map<Invoice>(dto, opt => opt.Items["UserId"] = userId);
 
         await _invoiceRepo.CreateAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateInvoiceDto dto)
     {
         var invoice = await _invoiceRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (invoice == null)
-            throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
 
         _mapper.Map(dto, invoice);
-        invoice.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var invoice = await _invoiceRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (invoice == null)
+        if(await _invoiceRepo.UpdateAsync(
+            x => x.UserId == userId && x.Id == id,
+            s =>
+            {
+                s.SetProperty(x => x.DeletedAt, System.DateTime.UtcNow);
+            }) == 0)
             throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
-
-        invoice.DeletedAt = System.DateTime.UtcNow;
-
-        await _invoiceRepo.DeleteAsync(invoice);
-        await _unitOfWork.SaveChangesAsync();
     }
 }

@@ -46,42 +46,29 @@ public class FinancialAccountService : IFinancialAccountService
 
     public async Task CreateAsync(long userId, CreateFinancialAccountDto dto)
     {
-        var account = _mapper.Map<FinancialAccount>(dto);
-        account.UserId = userId;
-        account.CreatedAt = System.DateTime.UtcNow;
-        account.UpdatedAt = System.DateTime.UtcNow;
+        var account = _mapper.Map<FinancialAccount>(dto, opt => opt.Items["UserId"] = userId);
 
         await _accountRepo.CreateAsync(account);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long userId, long id, UpdateFinancialAccountDto dto)
     {
         var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (account == null)
-            throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
 
         _mapper.Map(dto, account);
-        account.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (account == null)
+        if(await _accountRepo.UpdateAsync(
+            x => x.UserId == userId && x.Id == id,
+            s =>
+            {
+                s.SetProperty(x => x.DeletedAt, System.DateTime.UtcNow);
+            }) == 0)
             throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
-
-        account.DeletedAt = System.DateTime.UtcNow;
-        account.IsActive = false;
-
-        await _accountRepo.DeleteAsync(account);
-        await _unitOfWork.SaveChangesAsync();
     }
 }

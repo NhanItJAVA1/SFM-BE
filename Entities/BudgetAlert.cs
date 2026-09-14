@@ -16,7 +16,7 @@ public class BudgetAlert
 
     public bool IsRead { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Budget Budget { get; set; } = null!;
 }

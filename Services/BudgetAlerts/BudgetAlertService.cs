@@ -38,13 +38,9 @@ public class BudgetAlertService : IBudgetAlertService
     {
         var alert = await _alertRepo.All()
             .Include(x => x.Budget)
-            .FirstOrDefaultAsync(x => x.Id == alertId && x.Budget.UserId == userId);
-
-        if (alert == null)
-            throw new NotFoundException("Budget alert not found", "BUDGET_ALERT_NOT_FOUND");
+            .FirstOrDefaultAsync(x => x.Id == alertId && x.Budget.UserId == userId) ?? throw new NotFoundException("Budget alert not found", "BUDGET_ALERT_NOT_FOUND");            
 
         alert.IsRead = true;
-
         await _unitOfWork.SaveChangesAsync();
     }
 }

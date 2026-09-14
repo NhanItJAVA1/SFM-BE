@@ -50,8 +50,7 @@ public class UserService : IUserService
 
     public async Task UpdateAsync(long id, UpdateUserDto dto)
     {
-        var user = await _userRepo.Where(u => u.Id == id)
-            .FirstOrDefaultAsync();
+        var user = await _userRepo.Where(u => u.Id == id).FirstOrDefaultAsync();
 
         if (user == null)
             throw new NotFoundException("User not found", "USER_NOT_FOUND");
@@ -61,19 +60,15 @@ public class UserService : IUserService
         _mapper.Map(dto, user);
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _userRepo.UpdateAsync(user);
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long id)
     {
-        var user = await _userRepo.FindAsync(u => u.Id == id);
-
-        if (user == null)
+        if (await _userRepo.UpdateAsync(
+        x => x.Id == id && x.DeletedAt == null,
+        s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("User not found", "USER_NOT_FOUND");
-
-        await _userRepo.DeleteAsync(user);
-        await _unitOfWork.SaveChangesAsync();
     }
 
     private async Task EnsureEmailAvailableAsync(long userId, string email)

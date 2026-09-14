@@ -47,17 +47,14 @@ public class TransactionService : ITransactionService
 
     public async Task CreateAsync(long accountId, CreateTransactionDto dto)
     {
-        var transaction = _mapper.Map<TransactionEntity>(dto);
-        transaction.AccountId = accountId;
-        transaction.CreatedAt = System.DateTime.UtcNow;
-        transaction.UpdatedAt = System.DateTime.UtcNow;
+        var transaction = _mapper.Map<TransactionEntity>(dto, opt => opt.Items["AccountId"] = accountId);
 
         await _transactionRepo.CreateAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
 
     }
 
-    public async Task UpdateAsync(long accountId    , long id, UpdateTransactionDto dto)
+    public async Task UpdateAsync(long accountId, long id, UpdateTransactionDto dto)
     {
         var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .FirstOrDefaultAsync();
@@ -66,22 +63,14 @@ public class TransactionService : ITransactionService
             throw new NotFoundException("Transaction not found", "TRANSACTION_NOT_FOUND");
 
         _mapper.Map(dto, transaction);
-        transaction.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long accountId, long id)
     {
-        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (transaction == null)
+        if (await _transactionRepo.UpdateAsync(
+        x => x.Id == id && x.DeletedAt == null,
+        s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("Transaction not found", "TRANSACTION_NOT_FOUND");
-
-        transaction.DeletedAt = System.DateTime.UtcNow;
-
-        await _transactionRepo.DeleteAsync(transaction);
-        await _unitOfWork.SaveChangesAsync();
     }
 }

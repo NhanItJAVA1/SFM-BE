@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using SFM_BE.Contexts;
 using System;
 using System.Collections.Generic;
@@ -66,16 +67,25 @@ public class GenericRepository<T> : IGenericRepository<T>
         return Task.FromResult(item);
     }
 
+    public async Task<int> UpdateAsync(Expression<Func<T, bool>> predicate, Action<UpdateSettersBuilder<T>> set)
+    {
+        return await DbSet.Where(predicate).ExecuteUpdateAsync(set);
+    }
+
     public Task UpdateRangeAsync(IEnumerable<T> items)
     {
         DbSet.UpdateRange(items);
         return Task.CompletedTask;
     }
 
-    public Task DeleteAsync(T item)
+    public void Delete(T item)
     {
         DbSet.Remove(item);
-        return Task.CompletedTask;
+    }
+
+    public async Task<int> DeleteAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await DbSet.Where(predicate).ExecuteDeleteAsync();
     }
 
     public void DeleteRange(IEnumerable<T> entities)

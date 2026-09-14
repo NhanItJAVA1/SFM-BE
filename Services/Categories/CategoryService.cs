@@ -42,10 +42,7 @@ public class CategoryService : ICategoryService
     {
         var category = await _categoryRepo.Where(x => (x.UserId == userId || x.UserId == null) && x.Id == id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (category == null)
-            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
         return _mapper.Map<CategoryResponseDto>(category);
     }
@@ -54,8 +51,6 @@ public class CategoryService : ICategoryService
     {
         var category = _mapper.Map<Category>(dto);
         category.UserId = userId;
-        category.CreatedAt = System.DateTime.UtcNow;
-        category.UpdatedAt = System.DateTime.UtcNow;
 
         await _categoryRepo.CreateAsync(category);
         await _unitOfWork.SaveChangesAsync();
@@ -65,37 +60,29 @@ public class CategoryService : ICategoryService
     public async Task UpdateAsync(long userId, long id, UpdateCategoryDto dto)
     {
         var category = await _categoryRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (category == null)
-            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
         _mapper.Map(dto, category);
-        category.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var category = await _categoryRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
+        var category = await _categoryRepo
+            .Where(x => x.UserId == userId && x.Id == id)
+            .AsNoTracking()
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
-        if (category == null)
-            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+        await _budgetRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _budgetRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-         .SetProperty(b => b.CategoryId, (long?)null));
+        await _recurringTransactionRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _recurringTransactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-            .SetProperty(r => r.CategoryId, (long?)null));
+        await _transactionRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _transactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-            .SetProperty(r => r.CategoryId, (long?)null));
-
-        category.DeletedAt = System.DateTime.UtcNow;
-
-        await _categoryRepo.DeleteAsync(category);
-        await _unitOfWork.SaveChangesAsync();
+        await _categoryRepo.UpdateAsync(x => x.Id == id,
+            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow));
     }
 }
