@@ -28,7 +28,7 @@ public class User
 
     public Role Role { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; }
 

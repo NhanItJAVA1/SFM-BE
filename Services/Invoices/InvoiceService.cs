@@ -3,11 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Invoices;
 using SFM_BE.Entities;
 using SFM_BE.Exceptions;
-using SFM_BE.Enums;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Invoices;
 
@@ -63,10 +60,7 @@ public class InvoiceService : IInvoiceService
     {
         if(await _invoiceRepo.UpdateAsync(
             x => x.UserId == userId && x.Id == id,
-            s =>
-            {
-                s.SetProperty(x => x.DeletedAt, System.DateTime.UtcNow);
-            }) == 0)
+            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
     }
 }

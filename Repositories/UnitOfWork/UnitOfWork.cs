@@ -1,8 +1,6 @@
+using Microsoft.EntityFrameworkCore.Storage;
 using SFM_BE.Contexts;
 using SFM_BE.Repositories.Generic;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Repositories.UnitOfWork;
 
@@ -14,6 +12,11 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
+    }
+
+    public Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        return _context.Database.BeginTransactionAsync();
     }
 
     public IGenericRepository<TEntity> GetRepository<TEntity>()

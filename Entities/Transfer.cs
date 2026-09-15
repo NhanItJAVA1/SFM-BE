@@ -18,7 +18,7 @@ public class Transfer
 
     public DateTime TransferDate { get; set; } 
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User User { get; set; } = null!;
 

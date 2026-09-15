@@ -5,8 +5,6 @@ using SFM_BE.Entities;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Categories;
 
@@ -49,8 +47,7 @@ public class CategoryService : ICategoryService
 
     public async Task CreateAsync(long userId, CreateCategoryDto dto)
     {
-        var category = _mapper.Map<Category>(dto);
-        category.UserId = userId;
+        var category = _mapper.Map<Category>(dto, opt => opt.Items["UserId"] = userId);
 
         await _categoryRepo.CreateAsync(category);
         await _unitOfWork.SaveChangesAsync();
@@ -68,10 +65,12 @@ public class CategoryService : ICategoryService
 
     public async Task DeleteAsync(long userId, long id)
     {
-        var category = await _categoryRepo
-            .Where(x => x.UserId == userId && x.Id == id)
-            .AsNoTracking()
-            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+        
+        if (await _categoryRepo.UpdateAsync(
+            x => x.UserId == userId && x.Id == id && x.DeletedAt == null,
+            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
+            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
         await _budgetRepo.UpdateAsync(x => x.CategoryId == id,
             s => s.SetProperty(x => x.CategoryId, (long?)null));
@@ -82,7 +81,7 @@ public class CategoryService : ICategoryService
         await _transactionRepo.UpdateAsync(x => x.CategoryId == id,
             s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _categoryRepo.UpdateAsync(x => x.Id == id,
-            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow));
+        // Fail ==> CommitAsync() can't run ==> using var transaction call DisposeAsync() ==> clean resource and rollback transaction
+        await transaction.CommitAsync();
     }
 }

@@ -5,8 +5,6 @@ using SFM_BE.Entities;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Accounts;
 
@@ -25,7 +23,8 @@ public class FinancialAccountService : IFinancialAccountService
 
     public async Task<List<FinancialAccountResponseDto>> GetAccountsAsync(long userId)
     {
-        var accounts = await _accountRepo.Where(x => x.UserId == userId)
+        //Set manually DeletedAt cuz we don't have a global filter for soft delete in this project
+        var accounts = await _accountRepo.Where(x => x.UserId == userId && x.DeletedAt == null)
             .AsNoTracking()
             .ToListAsync();
 
@@ -34,12 +33,9 @@ public class FinancialAccountService : IFinancialAccountService
 
     public async Task<FinancialAccountResponseDto> GetAccountAsync(long userId, long id)
     {
-        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
+        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id && x.DeletedAt == null)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (account == null)
-            throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
 
         return _mapper.Map<FinancialAccountResponseDto>(account);
     }
@@ -65,10 +61,7 @@ public class FinancialAccountService : IFinancialAccountService
     {
         if(await _accountRepo.UpdateAsync(
             x => x.UserId == userId && x.Id == id,
-            s =>
-            {
-                s.SetProperty(x => x.DeletedAt, System.DateTime.UtcNow);
-            }) == 0)
+            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
     }
 }

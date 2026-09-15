@@ -81,6 +81,7 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.FinancialAccounts)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -99,6 +100,9 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.Categories)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            //Tự thêm query filter để chỉ lấy những category chưa bị xóa
+
+            modelBuilder.Entity<Category>().HasQueryFilter(x => x.DeletedAt == null);
         });
 
         modelBuilder.Entity<Transaction>(entity =>
@@ -125,6 +129,9 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.Transactions)
                 .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Transaction>().HasQueryFilter(x => x.DeletedAt == null);
+            modelBuilder.Entity<TransactionAttachment>().HasQueryFilter(x => x.Transaction.DeletedAt == null);
         });
 
         modelBuilder.Entity<TransactionAttachment>(entity =>
@@ -164,7 +171,10 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.ToAccount)
                 .WithMany(x => x.ToTransfers)
                 .HasForeignKey(x => x.ToAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            // Xóa acc ==> xóa lịch sử chuyển tiền thì ==> OPEN
+            //modelBuilder.Entity<Transfer>().HasQueryFilter(x => x.FromAccount.DeletedAt == null && x.ToAccount.DeletedAt == null);
         });
 
         modelBuilder.Entity<Budget>(entity =>
@@ -187,6 +197,9 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.Budgets)
                 .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Budget>().HasQueryFilter(x => x.DeletedAt == null);
+            modelBuilder.Entity<BudgetAlert>().HasQueryFilter(x => x.Budget.DeletedAt == null);
         });
 
         modelBuilder.Entity<BudgetAlert>(entity =>
@@ -222,6 +235,8 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.Invoices)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Invoice>().HasQueryFilter(x => x.DeletedAt == null);
         });
 
         modelBuilder.Entity<RecurringTransaction>(entity =>
@@ -251,6 +266,8 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.RecurringTransactions)
                 .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<RecurringTransaction>().HasQueryFilter(x => x.DeletedAt == null);
         });
 
         modelBuilder.Entity<Role>(entity =>

@@ -1,13 +1,10 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using SFM_BE.DTOs.RecurringTransactions;
 using SFM_BE.Entities;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.RecurringTransactions;
 
@@ -37,10 +34,7 @@ public class RecurringTransactionService : IRecurringTransactionService
     {
         var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (item == null)
-            throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
 
         return _mapper.Map<RecurringTransactionResponseDto>(item);
     }
@@ -51,7 +45,6 @@ public class RecurringTransactionService : IRecurringTransactionService
 
         await _recurringRepo.CreateAsync(item);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long accountId, long id, UpdateRecurringTransactionDto dto)

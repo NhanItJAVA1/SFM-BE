@@ -5,8 +5,6 @@ using SFM_BE.Entities;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.BudgetAlerts;
 
@@ -25,22 +23,18 @@ public class BudgetAlertService : IBudgetAlertService
 
     public async Task<List<BudgetAlertResponseDto>> GetAlertsAsync(long userId)
     {
-        var alerts = await _alertRepo.All()
-            .Include(x => x.Budget)
-            .Where(x => x.Budget.UserId == userId)
+        var alerts = await _alertRepo.Where(x => x.Budget.UserId == userId)
             .AsNoTracking()
             .ToListAsync();
 
         return _mapper.Map<List<BudgetAlertResponseDto>>(alerts);
-    }
+       }
 
     public async Task MarkAsReadAsync(long userId, long alertId)
     {
-        var alert = await _alertRepo.All()
-            .Include(x => x.Budget)
-            .FirstOrDefaultAsync(x => x.Id == alertId && x.Budget.UserId == userId) ?? throw new NotFoundException("Budget alert not found", "BUDGET_ALERT_NOT_FOUND");            
-
-        alert.IsRead = true;
-        await _unitOfWork.SaveChangesAsync();
+        if (await _alertRepo.UpdateAsync(
+        x => x.Id == alertId && x.Budget.UserId == userId,
+        s => s.SetProperty(x => x.IsRead, true)) == 0)
+            throw new NotFoundException("Budget alert not found", "BUDGET_ALERT_NOT_FOUND");
     }
 }

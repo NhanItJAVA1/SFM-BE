@@ -8,7 +8,7 @@ public interface IGenericRepository<T>
     where T : class
 {
     IQueryable<T> All();
-
+    IQueryable<T> AllWithDeleted();
     IQueryable<T> Where(Expression<Func<T, bool>> predicate);
 
     IQueryable<T> WhereInclude(
