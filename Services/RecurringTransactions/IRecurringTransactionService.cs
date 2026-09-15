@@ -1,12 +1,11 @@
 using SFM_BE.DTOs.RecurringTransactions;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SFM_BE.Enums;
 
 namespace SFM_BE.Services.RecurringTransactions;
 
 public interface IRecurringTransactionService
 {
-    Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long userId);
+    Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
 
     Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long userId, long id);
 
@@ -14,5 +13,5 @@ public interface IRecurringTransactionService
 
     Task UpdateAsync(long userId, long id, UpdateRecurringTransactionDto dto);
 
-    Task DeleteAsync(long userId, long id);
+    Task DeleteSoftAsync(long userId, long id);
 }

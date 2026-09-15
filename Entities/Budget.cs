@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
+using SFM_BE.Entities.Interface;
 
 namespace SFM_BE.Entities;
 
-public class Budget
+public class Budget : ISoftDeletable
 {
     public long Id { get; set; }
 
@@ -23,7 +22,7 @@ public class Budget
 
     public bool IsRecurring { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }
 

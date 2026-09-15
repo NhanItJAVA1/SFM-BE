@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Accounts;
+using SFM_BE.Enums;
 using SFM_BE.Services.Accounts;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -21,9 +20,9 @@ public class FinancialAccountsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAccounts()
+    public async Task<IActionResult> GetAccounts([FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _accountService.GetAccountsAsync(GetUserId()));
+        return Ok(await _accountService.GetAccountsAsync(GetUserId(), filter));
     }
 
     [HttpGet("{id:long}")]
@@ -49,15 +48,13 @@ public class FinancialAccountsController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteAccount(long id)
     {
-        await _accountService.DeleteAsync(GetUserId(), id);
+        await _accountService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
 
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

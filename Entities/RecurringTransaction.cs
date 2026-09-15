@@ -1,9 +1,9 @@
-using System;
+using SFM_BE.Entities.Interface;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class RecurringTransaction
+public class RecurringTransaction : ISoftDeletable
 {
     public long Id { get; set; }
 
@@ -23,7 +23,7 @@ public class RecurringTransaction
 
     public bool IsActive { get; set; } = true;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime? UpdatedAt { get; set; }
 

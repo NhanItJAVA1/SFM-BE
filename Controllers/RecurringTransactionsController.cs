@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.RecurringTransactions;
+using SFM_BE.Enums;
 using SFM_BE.Services.RecurringTransactions;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -21,9 +20,9 @@ public class RecurringTransactionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRecurringTransactions()
+    public async Task<IActionResult> GetRecurringTransactions([FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _recurringTransactionService.GetRecurringTransactionsAsync(GetUserId()));
+        return Ok(await _recurringTransactionService.GetRecurringTransactionsAsync(GetUserId(), filter));
     }
 
     [HttpGet("{id:long}")]
@@ -49,15 +48,13 @@ public class RecurringTransactionsController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteRecurringTransaction(long id)
     {
-        await _recurringTransactionService.DeleteAsync(GetUserId(), id);
+        await _recurringTransactionService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
 
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

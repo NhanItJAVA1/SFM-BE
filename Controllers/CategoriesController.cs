@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Categories;
+using SFM_BE.Enums;
 using SFM_BE.Services.Categories;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -21,9 +20,9 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategories()
+    public async Task<IActionResult> GetCategories([FromBody] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _categoryService.GetCategoriesAsync(GetUserId()));
+        return Ok(await _categoryService.GetCategoriesAsync(GetUserId(), filter));
     }
 
     [HttpGet("{id:long}")]
@@ -49,15 +48,13 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteCategory(long id)
     {
-        await _categoryService.DeleteAsync(GetUserId(), id);
+        await _categoryService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
 
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

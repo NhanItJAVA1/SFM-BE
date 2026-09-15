@@ -9,10 +9,6 @@ using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 using SFM_BE.Services.Auth.Models;
 using SFM_BE.Services.Provider;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UserEntity = SFM_BE.Entities.User;
 
 namespace SFM_BE.Services.Auth;
@@ -54,8 +50,6 @@ public class AuthService : IAuthService
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
         user.RoleId = userRole.Id;
-        user.CreatedAt = DateTime.UtcNow;
-        user.UpdatedAt = DateTime.UtcNow;
 
         await _userRepo.CreateAsync(user);
         await _unitOfWork.SaveChangesAsync();
@@ -175,10 +169,7 @@ public class AuthService : IAuthService
         };
     }
 
-    private async Task<UserEntity> LinkExternalLoginAsync(
-        UserEntity user,
-        ExternalLoginDto dto,
-        ExternalUserInfo externalUser)
+    private async Task<UserEntity> LinkExternalLoginAsync(UserEntity user, ExternalLoginDto dto, ExternalUserInfo externalUser)
     {
         var externalLogin = new ExternalLogin
         {

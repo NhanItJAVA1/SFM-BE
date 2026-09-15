@@ -2,11 +2,11 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Categories;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Categories;
 
@@ -29,9 +29,10 @@ public class CategoryService : ICategoryService
         _transactionRepo = _unitOfWork.GetRepository<Transaction>();
     }
 
-    public async Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId)
+    public async Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
         var categories = await _categoryRepo.Where(x => x.UserId == userId || x.UserId == null)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -41,21 +42,16 @@ public class CategoryService : ICategoryService
     public async Task<CategoryResponseDto> GetCategoryAsync(long userId, long id)
     {
         var category = await _categoryRepo.Where(x => (x.UserId == userId || x.UserId == null) && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (category == null)
-            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
         return _mapper.Map<CategoryResponseDto>(category);
     }
 
     public async Task CreateAsync(long userId, CreateCategoryDto dto)
     {
-        var category = _mapper.Map<Category>(dto);
-        category.UserId = userId;
-        category.CreatedAt = System.DateTime.UtcNow;
-        category.UpdatedAt = System.DateTime.UtcNow;
+        var category = _mapper.Map<Category>(dto, opt => opt.Items["UserId"] = userId);
 
         await _categoryRepo.CreateAsync(category);
         await _unitOfWork.SaveChangesAsync();
@@ -65,37 +61,31 @@ public class CategoryService : ICategoryService
     public async Task UpdateAsync(long userId, long id, UpdateCategoryDto dto)
     {
         var category = await _categoryRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (category == null)
-            throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
         _mapper.Map(dto, category);
-        category.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteSoftAsync(long userId, long id)
     {
-        var category = await _categoryRepo.Where(x => x.UserId == userId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (category == null)
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+        
+        if (await _categoryRepo.UpdateAsync(
+            x => x.UserId == userId && x.Id == id && x.DeletedAt == null,
+            s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
-        await _budgetRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-         .SetProperty(b => b.CategoryId, (long?)null));
+        await _budgetRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _recurringTransactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-            .SetProperty(r => r.CategoryId, (long?)null));
+        await _recurringTransactionRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        await _transactionRepo.Where(x => x.CategoryId == category.Id).ExecuteUpdateAsync(x => x
-            .SetProperty(r => r.CategoryId, (long?)null));
+        await _transactionRepo.UpdateAsync(x => x.CategoryId == id,
+            s => s.SetProperty(x => x.CategoryId, (long?)null));
 
-        category.DeletedAt = System.DateTime.UtcNow;
-
-        await _categoryRepo.DeleteAsync(category);
-        await _unitOfWork.SaveChangesAsync();
+        // Fail ==> CommitAsync() can't run ==> using var transaction call DisposeAsync() ==> clean resource and rollback transaction
+        await transaction.CommitAsync();
     }
 }

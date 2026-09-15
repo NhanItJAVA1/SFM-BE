@@ -1,13 +1,12 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using SFM_BE.DTOs.RecurringTransactions;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.RecurringTransactions;
 
@@ -24,9 +23,10 @@ public class RecurringTransactionService : IRecurringTransactionService
         _recurringRepo = _unitOfWork.GetRepository<RecurringTransaction>();
     }
 
-    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long accountId)
+    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long accountId, DeleteType filter = DeleteType.NotDeleted)
     {
         var items = await _recurringRepo.Where(x => x.AccountId == accountId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -36,53 +36,39 @@ public class RecurringTransactionService : IRecurringTransactionService
     public async Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long accountId, long id)
     {
         var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
-            .FirstOrDefaultAsync();
-
-        if (item == null)
-            throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
 
         return _mapper.Map<RecurringTransactionResponseDto>(item);
     }
 
     public async Task CreateAsync(long accountId, CreateRecurringTransactionDto dto)
     {
-        var item = _mapper.Map<RecurringTransaction>(dto);
-        item.AccountId = accountId;
-        item.CreatedAt = System.DateTime.UtcNow;
-        item.UpdatedAt = System.DateTime.UtcNow;
+        var item = _mapper.Map<RecurringTransaction>(dto, opt => opt.Items["AccountId"] = accountId);
 
         await _recurringRepo.CreateAsync(item);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long accountId, long id, UpdateRecurringTransactionDto dto)
     {
         var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (item == null)
-            throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
 
         _mapper.Map(dto, item);
-        item.UpdatedAt = System.DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long accountId, long id)
+    public async Task DeleteSoftAsync(long accountId, long id)
     {
-        var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (item == null)
+        if (await _recurringRepo.UpdateAsync(
+            x => x.AccountId == accountId && x.Id == id,
+            s =>
+            {
+                s.SetProperty(x => x.DeletedAt, DateTime.UtcNow);
+                s.SetProperty(x => x.IsActive, false);
+            }) == 0)
             throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
-
-        item.DeletedAt = System.DateTime.UtcNow;
-        item.IsActive = false;
-
-        await _recurringRepo.DeleteAsync(item);
-        await _unitOfWork.SaveChangesAsync();
     }
 }

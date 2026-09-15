@@ -1,9 +1,9 @@
-using System;
+using SFM_BE.Entities.Interface;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class Invoice
+public class Invoice : ISoftDeletable
 {
     public long Id { get; set; }
 
@@ -19,7 +19,7 @@ public class Invoice
 
     public string? Description { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }
 

@@ -164,7 +164,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.ToAccount)
                 .WithMany(x => x.ToTransfers)
                 .HasForeignKey(x => x.ToAccountId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); 
         });
 
         modelBuilder.Entity<Budget>(entity =>

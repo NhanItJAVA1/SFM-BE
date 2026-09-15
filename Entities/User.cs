@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
+using SFM_BE.Entities.Interface;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class User
+public class User : ISoftDeletable
 {
     public long Id { get; set; }
 
@@ -28,7 +27,7 @@ public class User
 
     public Role Role { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; }
 

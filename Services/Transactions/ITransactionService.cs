@@ -1,12 +1,11 @@
 using SFM_BE.DTOs.Transactions;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SFM_BE.Enums;
 
 namespace SFM_BE.Services.Transactions;
 
 public interface ITransactionService
 {
-    Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId);
+    Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
 
     Task<TransactionResponseDto> GetTransactionAsync(long userId, long id);
 
@@ -14,5 +13,5 @@ public interface ITransactionService
 
     Task UpdateAsync(long userId, long id, UpdateTransactionDto dto);
 
-    Task DeleteAsync(long userId, long id);
+    Task DeleteSoftAsync(long userId, long id);
 }

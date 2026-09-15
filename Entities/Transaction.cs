@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
+using SFM_BE.Entities.Interface;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class Transaction
+public class Transaction : ISoftDeletable
 {
     public long Id { get; set; }
 
@@ -25,7 +24,7 @@ public class Transaction
 
     public bool IsExcluded { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime? UpdatedAt { get; set; }
 

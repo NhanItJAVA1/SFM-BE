@@ -1,12 +1,9 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Auth;
 using SFM_BE.DTOs.RefreshToken;
 using SFM_BE.DTOs.Users;
 using SFM_BE.Exceptions;
 using SFM_BE.Services.Auth;
-using System;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -51,6 +48,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             result.AccessToken,
+            result.RefreshToken,
             result.User
         });
     }
