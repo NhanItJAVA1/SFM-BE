@@ -1,12 +1,11 @@
 using SFM_BE.DTOs.Budgets;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SFM_BE.Enums;
 
 namespace SFM_BE.Services.Budgets;
 
 public interface IBudgetService
 {
-    Task<List<BudgetResponseDto>> GetBudgetsAsync(long userId);
+    Task<List<BudgetResponseDto>> GetBudgetsAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
 
     Task<BudgetResponseDto> GetBudgetAsync(long userId, long id);
 
@@ -14,5 +13,5 @@ public interface IBudgetService
 
     Task UpdateAsync(long userId, long id, UpdateBudgetDto dto);
 
-    Task DeleteAsync(long userId, long id);
+    Task DeleteSoftAsync(long userId, long id);
 }

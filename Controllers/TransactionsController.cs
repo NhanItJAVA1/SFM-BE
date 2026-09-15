@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Transactions;
+using SFM_BE.Enums;
 using SFM_BE.Services.Transactions;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -21,9 +20,9 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions()
+    public async Task<IActionResult> GetTransactions([FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _transactionService.GetTransactionsAsync(GetUserId()));
+        return Ok(await _transactionService.GetTransactionsAsync(GetUserId(), filter));
     }
 
     [HttpGet("{id:long}")]
@@ -49,15 +48,13 @@ public class TransactionsController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteTransaction(long id)
     {
-        await _transactionService.DeleteAsync(GetUserId(), id);
+        await _transactionService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
 
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

@@ -2,11 +2,6 @@ using Google.Apis.Auth;
 using SFM_BE.Enums;
 using SFM_BE.Exceptions;
 using SFM_BE.Services.Auth.Models;
-using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Provider;
 
@@ -25,12 +20,10 @@ public class GoogleAuthProvider : IExternalAuthProvider
     {
         if (string.IsNullOrWhiteSpace(token))
             throw new UnauthorizedException("Invalid Google token", "INVALID_GOOGLE_TOKEN");
-
-        if (!IsJwt(token))
+        else if (!IsJwt(token))
             throw new UnauthorizedException("Only Google ID tokens are supported", "INVALID_GOOGLE_TOKEN_TYPE");
 
         var externalUser = await ValidateGoogleIdTokenAsync(token);
-
         if (!externalUser.EmailVerified)
             throw new UnauthorizedException("Google email is not verified", "GOOGLE_EMAIL_NOT_VERIFIED");
 

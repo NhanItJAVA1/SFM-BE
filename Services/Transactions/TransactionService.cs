@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Transactions;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 namespace SFM_BE.Services.Transactions;
@@ -20,9 +22,10 @@ public class TransactionService : ITransactionService
         _transactionRepo = _unitOfWork.GetRepository<Transaction>();
     }
 
-    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long accountId)
+    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long accountId, DeleteType filter = DeleteType.NotDeleted)
     {
         var transactions = await _transactionRepo.Where(x => x.AccountId == accountId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -32,6 +35,7 @@ public class TransactionService : ITransactionService
     public async Task<TransactionResponseDto> GetTransactionAsync(long accountId, long id)
     {
         var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Transaction not found", "TRANSACTION_NOT_FOUND");
 
@@ -44,7 +48,6 @@ public class TransactionService : ITransactionService
 
         await _transactionRepo.CreateAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
-
     }
 
     public async Task UpdateAsync(long accountId, long id, UpdateTransactionDto dto)
@@ -56,7 +59,7 @@ public class TransactionService : ITransactionService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long accountId, long id)
+    public async Task DeleteSoftAsync(long accountId, long id)
     {
         if (await _transactionRepo.UpdateAsync(
         x => x.Id == id && x.DeletedAt == null,

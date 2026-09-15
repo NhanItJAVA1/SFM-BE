@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Budgets;
+using SFM_BE.Enums;
 using SFM_BE.Services.Budgets;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -21,9 +20,9 @@ public class BudgetsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetBudgets()
+    public async Task<IActionResult> GetBudgets([FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _budgetService.GetBudgetsAsync(GetUserId()));
+        return Ok(await _budgetService.GetBudgetsAsync(GetUserId(), filter));
     }
 
     [HttpGet("{id:long}")]
@@ -49,15 +48,13 @@ public class BudgetsController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteBudget(long id)
     {
-        await _budgetService.DeleteAsync(GetUserId(), id);
+        await _budgetService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
 
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

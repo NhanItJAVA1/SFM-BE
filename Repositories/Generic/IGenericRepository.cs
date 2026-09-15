@@ -8,14 +8,10 @@ public interface IGenericRepository<T>
     where T : class
 {
     IQueryable<T> All();
-    IQueryable<T> AllWithDeleted();
     IQueryable<T> Where(Expression<Func<T, bool>> predicate);
+    IQueryable<T> WhereInclude(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
 
-    IQueryable<T> WhereInclude(
-        Expression<Func<T, bool>> predicate,
-        params Expression<Func<T, object>>[] includeProperties);
-
-    Task<T?> FindAsync(Expression<Func<T, bool>> predicate);
+    Task<T?> FindByIdAsync(long id);
 
     Task<T> CreateAsync(T item);
 
@@ -26,8 +22,8 @@ public interface IGenericRepository<T>
     Task UpdateRangeAsync(IEnumerable<T> items);
 
     void Delete(T item);
+    void DeleteById(long  id);
     Task<int> DeleteAsync(Expression<Func<T, bool>> predicate);
-
     void DeleteRange(IEnumerable<T> entities);
 
     void SetOriginalValue<TProperty>(

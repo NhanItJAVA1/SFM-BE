@@ -26,11 +26,6 @@ public class GenericRepository<T> : IGenericRepository<T>
         return _dbSet;
     }
 
-    public IQueryable<T> AllWithDeleted()
-    {
-        return _dbSet.IgnoreQueryFilters();
-    }
-
     public IQueryable<T> Where(Expression<Func<T, bool>> predicate)
     {
         return _dbSet.Where(predicate);
@@ -50,9 +45,9 @@ public class GenericRepository<T> : IGenericRepository<T>
         return query;
     }
 
-    public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
+    public async Task<T?> FindByIdAsync(long id)
     {
-        return await _dbSet.FirstOrDefaultAsync(predicate);
+        return await _dbSet.FindAsync(id);
     }
 
     public async Task<T> CreateAsync(T item)
@@ -86,6 +81,15 @@ public class GenericRepository<T> : IGenericRepository<T>
     public void Delete(T item)
     {
         _dbSet.Remove(item);
+    }
+
+    public void DeleteById(long id)
+    {
+        var entity = _dbSet.Find(id);
+        if (entity != null)
+        {
+            _dbSet.Remove(entity);
+        }
     }
 
     public async Task<int> DeleteAsync(Expression<Func<T, bool>> predicate)

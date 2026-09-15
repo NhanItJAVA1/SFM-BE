@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
+using SFM_BE.Entities.Interface;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class User
+public class User : ISoftDeletable
 {
     public long Id { get; set; }
 

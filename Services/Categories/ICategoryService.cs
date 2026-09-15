@@ -1,12 +1,11 @@
 using SFM_BE.DTOs.Categories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SFM_BE.Enums;
 
 namespace SFM_BE.Services.Categories;
 
 public interface ICategoryService
 {
-    Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId);
+    Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
 
     Task<CategoryResponseDto> GetCategoryAsync(long userId, long id);
 
@@ -14,5 +13,5 @@ public interface ICategoryService
 
     Task UpdateAsync(long userId, long id, UpdateCategoryDto dto);
 
-    Task DeleteAsync(long userId, long id);
+    Task DeleteSoftAsync(long userId, long id);
 }

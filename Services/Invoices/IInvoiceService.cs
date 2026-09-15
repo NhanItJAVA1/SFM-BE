@@ -1,12 +1,11 @@
 using SFM_BE.DTOs.Invoices;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SFM_BE.Enums;
 
 namespace SFM_BE.Services.Invoices;
 
 public interface IInvoiceService
 {
-    Task<List<InvoiceResponseDto>> GetInvoicesAsync(long userId);
+    Task<List<InvoiceResponseDto>> GetInvoicesAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
 
     Task<InvoiceResponseDto> GetInvoiceAsync(long userId, long id);
 
@@ -14,5 +13,5 @@ public interface IInvoiceService
 
     Task UpdateAsync(long userId, long id, UpdateInvoiceDto dto);
 
-    Task DeleteAsync(long userId, long id);
+    Task DeleteSoftAsync(long userId, long id);
 }

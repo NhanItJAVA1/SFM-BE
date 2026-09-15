@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Accounts;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 
@@ -21,10 +23,10 @@ public class FinancialAccountService : IFinancialAccountService
         _accountRepo = _unitOfWork.GetRepository<FinancialAccount>();
     }
 
-    public async Task<List<FinancialAccountResponseDto>> GetAccountsAsync(long userId)
+    public async Task<List<FinancialAccountResponseDto>> GetAccountsAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
-        //Set manually DeletedAt cuz we don't have a global filter for soft delete in this project
-        var accounts = await _accountRepo.Where(x => x.UserId == userId && x.DeletedAt == null)
+        var accounts = await _accountRepo.Where(x => x.UserId == userId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -33,7 +35,8 @@ public class FinancialAccountService : IFinancialAccountService
 
     public async Task<FinancialAccountResponseDto> GetAccountAsync(long userId, long id)
     {
-        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id && x.DeletedAt == null)
+        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
 
@@ -57,7 +60,7 @@ public class FinancialAccountService : IFinancialAccountService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteSoftAsync(long userId, long id)
     {
         if(await _accountRepo.UpdateAsync(
             x => x.UserId == userId && x.Id == id,

@@ -5,8 +5,6 @@ using SFM_BE.Entities;
 using SFM_BE.Exceptions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services.Transfers;
 

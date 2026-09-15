@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.RecurringTransactions;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 
@@ -21,9 +23,10 @@ public class RecurringTransactionService : IRecurringTransactionService
         _recurringRepo = _unitOfWork.GetRepository<RecurringTransaction>();
     }
 
-    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long accountId)
+    public async Task<List<RecurringTransactionResponseDto>> GetRecurringTransactionsAsync(long accountId, DeleteType filter = DeleteType.NotDeleted)
     {
         var items = await _recurringRepo.Where(x => x.AccountId == accountId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -33,6 +36,7 @@ public class RecurringTransactionService : IRecurringTransactionService
     public async Task<RecurringTransactionResponseDto> GetRecurringTransactionAsync(long accountId, long id)
     {
         var item = await _recurringRepo.Where(x => x.AccountId == accountId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Recurring transaction not found", "RECURRING_TRANSACTION_NOT_FOUND");
 
@@ -56,7 +60,7 @@ public class RecurringTransactionService : IRecurringTransactionService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long accountId, long id)
+    public async Task DeleteSoftAsync(long accountId, long id)
     {
         if (await _recurringRepo.UpdateAsync(
             x => x.AccountId == accountId && x.Id == id,

@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Invoices;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 
@@ -21,9 +23,10 @@ public class InvoiceService : IInvoiceService
         _invoiceRepo = _unitOfWork.GetRepository<Invoice>();
     }
 
-    public async Task<List<InvoiceResponseDto>> GetInvoicesAsync(long userId)
+    public async Task<List<InvoiceResponseDto>> GetInvoicesAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
         var invoices = await _invoiceRepo.Where(x => x.UserId == userId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -33,6 +36,7 @@ public class InvoiceService : IInvoiceService
     public async Task<InvoiceResponseDto> GetInvoiceAsync(long userId, long id)
     {
         var invoice = await _invoiceRepo.Where(x => x.UserId == userId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
 
@@ -56,11 +60,13 @@ public class InvoiceService : IInvoiceService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteSoftAsync(long userId, long id)
     {
         if(await _invoiceRepo.UpdateAsync(
             x => x.UserId == userId && x.Id == id,
             s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("Invoice not found", "INVOICE_NOT_FOUND");
     }
+
+
 }

@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Budgets;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 
@@ -21,9 +23,10 @@ public class BudgetService : IBudgetService
         _budgetRepo = _unitOfWork.GetRepository<Budget>();
     }
 
-    public async Task<List<BudgetResponseDto>> GetBudgetsAsync(long userId)
+    public async Task<List<BudgetResponseDto>> GetBudgetsAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
         var budgets = await _budgetRepo.Where(x => x.UserId == userId)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -33,6 +36,7 @@ public class BudgetService : IBudgetService
     public async Task<BudgetResponseDto> GetBudgetAsync(long userId, long id)
     {
         var budget = await _budgetRepo.Where(x => x.UserId == userId && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Budget not found", "BUDGET_NOT_FOUND");            
 
@@ -56,7 +60,7 @@ public class BudgetService : IBudgetService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteSoftAsync(long userId, long id)
     {
         if (await _budgetRepo.UpdateAsync(
             x => x.UserId == userId && x.Id == id,

@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.Services.BudgetAlerts;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Controllers;
 
@@ -35,8 +33,6 @@ public class BudgetAlertsController : ControllerBase
     private long GetUserId()
     {
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId)
-            ? userId
-            : throw new UnauthorizedAccessException("User id is missing from token.");
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }

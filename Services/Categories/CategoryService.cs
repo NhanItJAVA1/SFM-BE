@@ -2,7 +2,9 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Categories;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
 using SFM_BE.Exceptions;
+using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 
@@ -27,9 +29,10 @@ public class CategoryService : ICategoryService
         _transactionRepo = _unitOfWork.GetRepository<Transaction>();
     }
 
-    public async Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId)
+    public async Task<List<CategoryResponseDto>> GetCategoriesAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
         var categories = await _categoryRepo.Where(x => x.UserId == userId || x.UserId == null)
+            .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
 
@@ -39,6 +42,7 @@ public class CategoryService : ICategoryService
     public async Task<CategoryResponseDto> GetCategoryAsync(long userId, long id)
     {
         var category = await _categoryRepo.Where(x => (x.UserId == userId || x.UserId == null) && x.Id == id)
+            .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Category not found", "CATEGORY_NOT_FOUND");
 
@@ -63,7 +67,7 @@ public class CategoryService : ICategoryService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(long userId, long id)
+    public async Task DeleteSoftAsync(long userId, long id)
     {
         await using var transaction = await _unitOfWork.BeginTransactionAsync();
         
