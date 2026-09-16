@@ -7,7 +7,6 @@ public class Transaction : ISoftDeletable
 {
     public long Id { get; set; }
 
-
     public long AccountId { get; set; }
 
     public long? CategoryId { get; set; }

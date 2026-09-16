@@ -20,7 +20,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategories([FromBody] DeleteType filter = DeleteType.NotDeleted)
+    public async Task<IActionResult> GetCategories([FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
         return Ok(await _categoryService.GetCategoriesAsync(GetUserId(), filter));
     }

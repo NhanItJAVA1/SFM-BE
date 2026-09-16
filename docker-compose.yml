@@ -40,6 +40,7 @@ services:
       JWT_KEY: ${JWT_KEY}
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
 
     depends_on:
       - sqlserver
