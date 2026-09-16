@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <Folder Include="Configurations\" />
+    <Folder Include="DTOs\Files\" />
     <Folder Include="Helpers\" />
     <Folder Include="obj\Debug\net10.0\staticwebassets\" />
   </ItemGroup>
