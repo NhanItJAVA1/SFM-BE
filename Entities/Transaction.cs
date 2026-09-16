@@ -7,7 +7,6 @@ public class Transaction : ISoftDeletable
 {
     public long Id { get; set; }
 
-
     public long AccountId { get; set; }
 
     public long? CategoryId { get; set; }
@@ -35,4 +34,5 @@ public class Transaction : ISoftDeletable
     public Category? Category { get; set; }
 
     public ICollection<TransactionAttachment> Attachments { get; set; } = [];
+    public ICollection<TransactionItem> Items { get; set; } = [];
 }

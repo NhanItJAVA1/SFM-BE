@@ -7,7 +7,7 @@ using SFM_BE.Exceptions;
 using SFM_BE.Extensions;
 using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
-namespace SFM_BE.Services.Transactions;
+namespace SFM_BE.Services.Transactions.Impl;
 
 public class TransactionService : ITransactionService
 {

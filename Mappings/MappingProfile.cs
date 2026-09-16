@@ -53,6 +53,7 @@ public class MappingProfile : Profile
         CreateMap<Transaction, TransactionResponseDto>();
 
         CreateMap<TransactionAttachment, TransactionAttachmentDto>();
+        CreateMap<CreateTransactionItemDto, TransactionItem>();
 
         CreateMap<CreateTransferDto, Transfer>()
             .ForMember(x => x.UserId, opt => opt.Ignore())

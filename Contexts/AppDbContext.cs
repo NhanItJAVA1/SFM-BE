@@ -141,6 +141,27 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<TransactionItem>(entity =>
+        {
+            entity.Property(x => x.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(x => x.Quantity)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.UnitPrice)
+                .HasPrecision(18, 2);
+
+            entity.Property(x => x.Amount)
+                .HasPrecision(18, 2);
+
+            entity.HasOne(x => x.Transaction)
+                .WithMany(x => x.Items)
+                .HasForeignKey(x => x.TransactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Transfer>(entity =>
         {
             entity.Property(x => x.Amount).HasPrecision(18, 2);

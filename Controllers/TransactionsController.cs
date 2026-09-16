@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
 using SFM_BE.Services.Transactions;
+using SFM_BE.Services.Transactions.Impl;
 using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
@@ -13,10 +14,12 @@ namespace SFM_BE.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly ITransactionService _transactionService;
+    private readonly IBillScanService _billScanService;
 
-    public TransactionsController(ITransactionService transactionService)
+    public TransactionsController(ITransactionService transactionService, IBillScanService billScanService)
     {
         _transactionService = transactionService;
+        _billScanService = billScanService;
     }
 
     [HttpGet]
@@ -50,6 +53,15 @@ public class TransactionsController : ControllerBase
     {
         await _transactionService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
+    }
+
+    [HttpPost("scan-bill")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> ScanBillAsync(IFormFile image)
+    {
+        var result = await _billScanService.ScanAsync(image);
+
+        return Ok(result);
     }
 
     private long GetUserId()

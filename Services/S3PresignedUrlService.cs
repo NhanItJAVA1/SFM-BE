@@ -1,23 +1,10 @@
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace SFM_BE.Services;
 
-public sealed record PresignedUploadResult(
-    string UploadUrl,
-    string ObjectKey,
-    string PublicUrl,
-    DateTime ExpiresAtUtc);
-
-public sealed record DirectUploadResult(
-    string ObjectKey,
-    string PublicUrl,
-    DateTime UploadedAtUtc);
+public sealed record PresignedUploadResult(string UploadUrl, string ObjectKey, string PublicUrl, DateTime ExpiresAtUtc);
+public sealed record DirectUploadResult(string ObjectKey, string PublicUrl, DateTime UploadedAtUtc);
 
 public class S3PresignedUrlService
 {
@@ -34,67 +21,17 @@ public class S3PresignedUrlService
             ?? throw new InvalidOperationException("AWS_REGION is missing.");
     }
 
-    public PresignedUploadResult CreateVideoUploadUrl(
-        string fileName,
-        string contentType,
-        int expiresMinutes = 15)
+    public PresignedUploadResult CreateAvatarUploadUrl(string fileName, string contentType, int expiresMinutes = 15)
     {
         var extension = Path.GetExtension(fileName);
+
         if (string.IsNullOrWhiteSpace(extension))
-            extension = ".mp4";
-
-        var objectKey = $"records/videos/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
-        return CreateUploadUrl(objectKey, contentType, expiresMinutes);
-    }
-
-    public PresignedUploadResult CreateImageUploadUrl(
-        string fileName,
-        string contentType,
-        string category = "maps",
-        int expiresMinutes = 15)
-    {
-        var safeCategory = category.Equals("vehicles", StringComparison.OrdinalIgnoreCase)
-            ? "vehicles"
-            : "maps";
-
-        var extension = Path.GetExtension(fileName);
-        if (string.IsNullOrWhiteSpace(extension))
-        {
             extension = contentType.StartsWith("image/png", StringComparison.OrdinalIgnoreCase)
-                ? ".png"
-                : contentType.StartsWith("image/webp", StringComparison.OrdinalIgnoreCase)
-                    ? ".webp"
-                    : ".jpg";
-        }
+                ? ".png" : contentType.StartsWith("image/webp", StringComparison.OrdinalIgnoreCase) ? ".webp" : ".jpg";
 
-        var objectKey = $"catalog/images/{safeCategory}/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
+        var objectKey = $"avatars/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
         return CreateUploadUrl(objectKey, contentType, expiresMinutes);
-    }
-
-    public async Task<DirectUploadResult> UploadVideoAsync(IFormFile file)
-    {
-        var extension = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(extension))
-            extension = ".mp4";
-
-        var objectKey = $"records/videos/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
-        var publicUrl = CreatePublicUrl(objectKey);
-
-        await using var stream = file.OpenReadStream();
-        var request = new PutObjectRequest
-        {
-            BucketName = _bucketName,
-            Key = objectKey,
-            InputStream = stream,
-            ContentType = string.IsNullOrWhiteSpace(file.ContentType)
-                ? "video/mp4"
-                : file.ContentType
-        };
-
-        await _s3Client.PutObjectAsync(request);
-
-        return new DirectUploadResult(objectKey, publicUrl, DateTime.UtcNow);
-    }
+    }    
 
     public Task<string> CreateGetUrl(string objectKey, int expiresMinutes = 15)
     {
@@ -125,10 +62,7 @@ public class S3PresignedUrlService
         return uri.AbsolutePath.TrimStart('/');
     }
 
-    private PresignedUploadResult CreateUploadUrl(
-        string objectKey,
-        string contentType,
-        int expiresMinutes)
+    private PresignedUploadResult CreateUploadUrl(string objectKey, string contentType, int expiresMinutes)
     {
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(expiresMinutes);
         var request = new GetPreSignedUrlRequest
@@ -140,15 +74,53 @@ public class S3PresignedUrlService
             ContentType = contentType
         };
 
-        return new PresignedUploadResult(
-            _s3Client.GetPreSignedURL(request),
-            objectKey,
-            CreatePublicUrl(objectKey),
-            expiresAtUtc);
+        return new PresignedUploadResult(_s3Client.GetPreSignedURL(request), objectKey, CreatePublicUrl(objectKey), expiresAtUtc);
     }
 
-    private string CreatePublicUrl(string objectKey)
-    {
-        return $"https://{_bucketName}.s3.{_region}.amazonaws.com/{objectKey}";
-    }
+    private string CreatePublicUrl(string objectKey) => $"https://{_bucketName}.s3.{_region}.amazonaws.com/{objectKey}";
 }
+//public PresignedUploadResult CreateVideoUploadUrl(string fileName, string contentType, int expiresMinutes = 15)
+//{
+//    var extension = Path.GetExtension(fileName);
+//    if (string.IsNullOrWhiteSpace(extension))
+//        extension = ".mp4";
+
+//    var objectKey = $"records/videos/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
+//    return CreateUploadUrl(objectKey, contentType, expiresMinutes);
+//}
+
+//public PresignedUploadResult CreateImageUploadUrl(string fileName, string contentType, string category = "maps", int expiresMinutes = 15)
+//{
+//    var safeCategory = category.Equals("vehicles", StringComparison.OrdinalIgnoreCase) ? "vehicles" : "maps";
+
+//    var extension = Path.GetExtension(fileName);
+//    if (string.IsNullOrWhiteSpace(extension))
+//        extension = contentType.StartsWith("image/png", StringComparison.OrdinalIgnoreCase)
+//            ? ".png" : contentType.StartsWith("image/webp", StringComparison.OrdinalIgnoreCase) ? ".webp" : ".jpg";
+
+//    var objectKey = $"catalog/images/{safeCategory}/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
+//    return CreateUploadUrl(objectKey, contentType, expiresMinutes);
+//}
+
+//public async Task<DirectUploadResult> UploadVideoAsync(IFormFile file)
+//{
+//    var extension = Path.GetExtension(file.FileName);
+//    if (string.IsNullOrWhiteSpace(extension))
+//        extension = ".mp4";
+
+//    var objectKey = $"records/videos/{DateTime.UtcNow:yyyy/MM/dd}/{Guid.NewGuid():N}{extension}";
+//    var publicUrl = CreatePublicUrl(objectKey);
+
+//    await using var stream = file.OpenReadStream();
+//    var request = new PutObjectRequest
+//    {
+//        BucketName = _bucketName,
+//        Key = objectKey,
+//        InputStream = stream,
+//        ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "video/mp4" : file.ContentType
+//    };
+
+//    await _s3Client.PutObjectAsync(request);
+
+//    return new DirectUploadResult(objectKey, publicUrl, DateTime.UtcNow);
+//}
