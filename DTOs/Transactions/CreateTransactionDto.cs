@@ -1,4 +1,3 @@
-using System;
 using SFM_BE.Enums;
 
 namespace SFM_BE.DTOs.Transactions;
@@ -20,4 +19,5 @@ public class CreateTransactionDto
     public string? Location { get; set; }
 
     public bool IsExcluded { get; set; }
+    public List<CreateTransactionItemDto> Items { get; set; } = [];
 }

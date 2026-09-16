@@ -34,4 +34,5 @@ public class Transaction : ISoftDeletable
     public Category? Category { get; set; }
 
     public ICollection<TransactionAttachment> Attachments { get; set; } = [];
+    public ICollection<TransactionItem> Items { get; set; } = [];
 }
