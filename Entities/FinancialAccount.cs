@@ -3,7 +3,7 @@ using SFM_BE.Enums;
 
 namespace SFM_BE.Entities;
 
-public class FinancialAccount : ISoftDeletable
+public class FinancialAccount : ISoftDeletable, IActivatable
 {
     public long Id { get; set; }
 
