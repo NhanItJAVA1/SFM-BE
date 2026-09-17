@@ -309,5 +309,25 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        var seedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        modelBuilder.Entity<Category>().HasData(
+                        // Expense
+            new Category { Id = 1, Name = "Ăn uống", Type = CategoryType.Expense, Icon = "food", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 2, Name = "Di chuyển", Type = CategoryType.Expense, Icon = "transport", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 3, Name = "Mua sắm", Type = CategoryType.Expense, Icon = "shopping", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 4, Name = "Hóa đơn", Type = CategoryType.Expense, Icon = "bill", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 5, Name = "Giải trí", Type = CategoryType.Expense, Icon = "entertainment", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 6, Name = "Sức khỏe", Type = CategoryType.Expense, Icon = "health", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 7, Name = "Giáo dục", Type = CategoryType.Expense, Icon = "education", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 8, Name = "Khác", Type = CategoryType.Expense, Icon = "other", IsDefault = true, CreatedAt = seedDate },
+
+            // Income
+            new Category { Id = 9, Name = "Lương", Type = CategoryType.Income, Icon = "salary", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 10, Name = "Thưởng", Type = CategoryType.Income, Icon = "bonus", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 11, Name = "Đầu tư", Type = CategoryType.Income, Icon = "investment", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 12, Name = "Quà tặng", Type = CategoryType.Income, Icon = "gift", IsDefault = true, CreatedAt = seedDate },
+            new Category { Id = 13, Name = "Thu nhập khác", Type = CategoryType.Income, Icon = "other", IsDefault = true, CreatedAt = seedDate }
+        );
     }
 }

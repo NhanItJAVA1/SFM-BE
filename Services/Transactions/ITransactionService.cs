@@ -1,4 +1,5 @@
 using SFM_BE.DTOs.Transactions;
+using SFM_BE.DTOs.Transactions.Statistics;
 using SFM_BE.Enums;
 
 namespace SFM_BE.Services.Transactions;
@@ -14,4 +15,5 @@ public interface ITransactionService
     Task UpdateAsync(long userId, long id, UpdateTransactionDto dto);
 
     Task DeleteSoftAsync(long userId, long id);
+    Task<CategorySpendingResponseDto> GetCategorySpendingAsync(long userId, int? month, int? year, int? compareMonth, int? compareYear);
 }

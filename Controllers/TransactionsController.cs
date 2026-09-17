@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
+using SFM_BE.Services.BillScan;
 using SFM_BE.Services.Transactions;
 using SFM_BE.Services.Transactions.Impl;
 using System.Security.Claims;
@@ -59,9 +60,15 @@ public class TransactionsController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ScanBillAsync(IFormFile image)
     {
-        var result = await _billScanService.ScanAsync(image);
+        var result = await _billScanService.ScanAsync(GetUserId(), image);
 
         return Ok(result);
+    }
+
+    [HttpGet("category-spending")]
+    public async Task<IActionResult> GetCategorySpendingAsync([FromQuery] int? month, [FromQuery] int? year, [FromQuery] int? compareMonth, [FromQuery] int? compareYear)
+    {
+        return Ok(await _transactionService.GetCategorySpendingAsync(GetUserId(), month, year, compareMonth, compareYear));
     }
 
     private long GetUserId()
@@ -69,4 +76,6 @@ public class TransactionsController : ControllerBase
         var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
+
+
 }

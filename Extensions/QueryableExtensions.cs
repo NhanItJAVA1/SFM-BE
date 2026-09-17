@@ -22,5 +22,7 @@ namespace SFM_BE.Extensions
                 DeleteType.Deleted => query.Where(x => x.DeletedAt != null),
                 _ => query
             };
+        public static IQueryable<T> IsActive<T>(this IQueryable<T> query)
+            where T : IActivatable => query.Where(x => x.IsActive);
     }
 }
