@@ -35,6 +35,7 @@ public class TransactionService : ITransactionService
             .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
+        
 
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
@@ -61,10 +62,10 @@ public class TransactionService : ITransactionService
         //if (dto.Type == TransactionType.Expense && financialAccount.InitialBalance < dto.Amount)
         //    throw new BadRequestException("Insufficient balance", "INSUFFICIENT_BALANCE");
 
-        if (dto.Type == TransactionType.Expense)
-            financialAccount.InitialBalance -= dto.Amount;
-        else
-            financialAccount.InitialBalance += dto.Amount;
+        //if (dto.Type == TransactionType.Expense)
+        //    financialAccount.InitialBalance -= dto.Amount;
+        //else
+        //    financialAccount.InitialBalance += dto.Amount;
 
         await _transactionRepo.CreateAsync(transaction);
         var affected =  await _unitOfWork.SaveChangesAsync();

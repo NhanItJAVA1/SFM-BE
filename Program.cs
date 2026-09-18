@@ -157,7 +157,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.EnablePersistAuthorization();
+    });
 }
 
 app.UseHttpsRedirection();
