@@ -21,15 +21,12 @@ public class BudgetsController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetBudgets([FromQuery] DeleteType filter = DeleteType.NotDeleted)
-    {
-        return Ok(await _budgetService.GetBudgetsAsync(GetUserId(), filter));
-    }
+        => Ok(await _budgetService.GetBudgetsAsync(GetUserId(), filter));
 
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetBudget(long id)
-    {
-        return Ok(await _budgetService.GetBudgetAsync(GetUserId(), id));
-    }
+        => Ok(await _budgetService.GetBudgetAsync(GetUserId(), id));
+
 
     [HttpPost]
     public async Task<IActionResult> CreateBudget(CreateBudgetDto dto)
@@ -51,6 +48,16 @@ public class BudgetsController : ControllerBase
         await _budgetService.DeleteSoftAsync(GetUserId(), id);
         return NoContent();
     }
+
+    [HttpGet("{id:long}/progress")]
+    public async Task<IActionResult> GetProgressAsync(long id)
+        => Ok(await _budgetService.GetProgressAsync(GetUserId(), id));
+
+
+    [HttpGet("{id:long}/progress-detail")]
+    public async Task<IActionResult> GetProgressDetailAsync(long id) 
+        => Ok(await _budgetService.GetProgressDetailAsync(GetUserId(), id));
+    
 
     private long GetUserId()
     {

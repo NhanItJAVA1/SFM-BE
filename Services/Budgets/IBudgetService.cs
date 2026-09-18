@@ -14,4 +14,8 @@ public interface IBudgetService
     Task UpdateAsync(long userId, long id, UpdateBudgetDto dto);
 
     Task DeleteSoftAsync(long userId, long id);
+
+    Task<BudgetProgressDto> GetProgressAsync(long userId, long budgetId);
+
+    Task<BudgetProgressDetailDto> GetProgressDetailAsync(long userId, long budgetId);
 }

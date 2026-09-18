@@ -65,12 +65,9 @@ public class TransactionService : ITransactionService
             financialAccount.InitialBalance -= dto.Amount;
         else
             financialAccount.InitialBalance += dto.Amount;
-        Console.WriteLine($"Type: {dto.Type}");
-        Console.WriteLine($"Balance: {financialAccount.InitialBalance}");
-        //await _transactionRepo.CreateAsync(transaction);
+
+        await _transactionRepo.CreateAsync(transaction);
         var affected =  await _unitOfWork.SaveChangesAsync();
-        Console.WriteLine($"Balance: {financialAccount.InitialBalance}");
-        Console.WriteLine($"Affected: {affected}");
     }
 
     public async Task UpdateAsync(long accountId, long id, UpdateTransactionDto dto)

@@ -8,6 +8,8 @@ public class BudgetResponseDto
 
     public long UserId { get; set; }
 
+    public string? CategoryName { get; set; }
+
     public long? CategoryId { get; set; }
 
     public string Name { get; set; } = string.Empty;
