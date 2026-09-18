@@ -21,21 +21,21 @@ public class UsersController : ControllerBase
         return Ok(await _userService.GetUsersAsync());
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetUser(int id)
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetUser(long id)
     {
         return Ok(await _userService.GetUserAsync(id));
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> UpdateUser(long id, UpdateUserDto dto)
     {
         await _userService.UpdateAsync(id, dto);
         return Ok();
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteUser(int id)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> DeleteUser(long id)
     {
         await _userService.DeleteAsync(id);
         return NoContent();
