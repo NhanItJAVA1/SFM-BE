@@ -19,6 +19,7 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtService _jwtService;
     private readonly IMapper _mapper;
+    private readonly S3PresignedUrlService _s3Service;
     private readonly IGenericRepository<UserEntity> _userRepo;
     private readonly IGenericRepository<Role> _roleRepo;
     private readonly IGenericRepository<RefreshToken> _refreshTokenRepo;
@@ -28,12 +29,14 @@ public class AuthService : IAuthService
         IEnumerable<IExternalAuthProvider> providers,
         IUnitOfWork unitOfWork,
         JwtService jwtService,
-        IMapper mapper)
+        IMapper mapper,
+        S3PresignedUrlService s3Service)
     {
         _providers = providers;
         _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _mapper = mapper;
+        _s3Service = s3Service;
         _userRepo = unitOfWork.GetRepository<UserEntity>();
         _roleRepo = unitOfWork.GetRepository<Role>();
         _refreshTokenRepo = unitOfWork.GetRepository<RefreshToken>();
@@ -91,7 +94,7 @@ public class AuthService : IAuthService
         {
             AccessToken = CreateAccessToken(refreshToken!.User),
             RefreshToken = refreshToken.Token,
-            User = _mapper.Map<UserResponseDto>(refreshToken.User)
+            User = await MapUserResponseAsync(refreshToken.User)
         };
     }
 
@@ -217,8 +220,16 @@ public class AuthService : IAuthService
         {
             AccessToken = CreateAccessToken(user),
             RefreshToken = refreshToken,
-            User = _mapper.Map<UserResponseDto>(user)
+            User = await MapUserResponseAsync(user)
         };
+    }
+
+    private async Task<UserResponseDto> MapUserResponseAsync(UserEntity user)
+    {
+        var userDto = _mapper.Map<UserResponseDto>(user);
+        userDto.AvatarUrl = await _s3Service.CreateGetUrlFromStoredUrl(userDto.AvatarUrl);
+
+        return userDto;
     }
 
     private string CreateAccessToken(UserEntity user)
