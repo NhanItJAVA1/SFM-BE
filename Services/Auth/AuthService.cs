@@ -25,12 +25,7 @@ public class AuthService : IAuthService
     private readonly IGenericRepository<RefreshToken> _refreshTokenRepo;
     private readonly IGenericRepository<ExternalLogin> _externalLoginRepo;
 
-    public AuthService(
-        IEnumerable<IExternalAuthProvider> providers,
-        IUnitOfWork unitOfWork,
-        JwtService jwtService,
-        IMapper mapper,
-        S3PresignedUrlService s3Service)
+    public AuthService(IEnumerable<IExternalAuthProvider> providers, IUnitOfWork unitOfWork, JwtService jwtService, IMapper mapper, S3PresignedUrlService s3Service)
     {
         _providers = providers;
         _unitOfWork = unitOfWork;
@@ -227,7 +222,8 @@ public class AuthService : IAuthService
     private async Task<UserResponseDto> MapUserResponseAsync(UserEntity user)
     {
         var userDto = _mapper.Map<UserResponseDto>(user);
-        userDto.AvatarUrl = await _s3Service.CreateGetUrlFromStoredUrl(userDto.AvatarUrl);
+
+        userDto.AvatarUrl = !string.IsNullOrWhiteSpace(userDto.AvatarUrl) ? await _s3Service.CreateGetUrlFromStoredUrl(userDto.AvatarUrl) : null;
 
         return userDto;
     }

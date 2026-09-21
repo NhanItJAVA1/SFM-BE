@@ -14,10 +14,7 @@ public class UserService : IUserService
     private readonly IGenericRepository<Entities.User> _userRepo;
     private readonly S3PresignedUrlService _s3Service;
 
-    public UserService(
-        IUnitOfWork unitOfWork,
-        IMapper mapper,
-        S3PresignedUrlService s3Service)
+    public UserService(IUnitOfWork unitOfWork, IMapper mapper, S3PresignedUrlService s3Service)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;

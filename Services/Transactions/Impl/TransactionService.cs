@@ -29,9 +29,9 @@ public class TransactionService : ITransactionService
         _financialAccountRepo = _unitOfWork.GetRepository<FinancialAccount>();
     }
 
-    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long accountId, DeleteType filter = DeleteType.NotDeleted)
+    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long accountId, DeleteType filter = DeleteType.NotDeleted)
     {
-        var transactions = await _transactionRepo.Where(x => x.AccountId == accountId)
+        var transactions = await _transactionRepo.Where(x => x.AccountId == accountId && x.Account.UserId == userId)
             .DeleteFilter(filter)
             .AsNoTracking()
             .ToListAsync();
@@ -40,9 +40,9 @@ public class TransactionService : ITransactionService
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
 
-    public async Task<TransactionResponseDto> GetTransactionAsync(long accountId, long id)
+    public async Task<TransactionResponseDto> GetTransactionAsync(long id, long accountId, long userId)
     {
-        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id)
+        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id && x.Account.UserId == userId)
             .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Transaction not found", "TRANSACTION_NOT_FOUND");
@@ -186,15 +186,10 @@ public class TransactionService : ITransactionService
                     Amount = amount,
                     CompareAmount = compareAmount,
 
-                    Percentage = totalAmount == 0
-                        ? 0
-                        : Math.Round(amount / totalAmount * 100, 2),
+                    Percentage = totalAmount == 0 ? 0 : Math.Round(amount / totalAmount * 100, 2),
 
-                    ChangePercentage =
-                        CalculateChange(amount, compareAmount),
-
-                    TransactionCount = current?.Count ?? 0,
-                    IsUncategorized = !categoryId.HasValue
+                    ChangePercentage =  CalculateChange(amount, compareAmount), 
+                    TransactionCount = current?.Count ?? 0, IsUncategorized = !categoryId.HasValue
                 };
             })
             .Where(x => x.Amount > 0 || x.CompareAmount > 0)
@@ -210,9 +205,7 @@ public class TransactionService : ITransactionService
             TotalAmount = totalAmount,
             CompareTotalAmount = compareTotalAmount,
 
-            TotalChangePercentage =
-                CalculateChange(totalAmount, compareTotalAmount),
-
+            TotalChangePercentage = CalculateChange(totalAmount, compareTotalAmount),
             Categories = result
         };
     }
