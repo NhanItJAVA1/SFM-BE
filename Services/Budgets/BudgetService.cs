@@ -111,6 +111,7 @@ public class BudgetService : IBudgetService
         result.SpentAmount = spentAmount;
         result.RemainingAmount = budget.Amount - spentAmount;
         result.UsedPercentage = budget.Amount > 0 ? Math.Round(spentAmount / budget.Amount * 100, 2) : 0;
+        result.IsAlert = result.UsedPercentage >= budget.AlertThreshold;
 
         return result;
     }

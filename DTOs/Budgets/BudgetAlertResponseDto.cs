@@ -1,7 +1,4 @@
-using System;
-
 namespace SFM_BE.DTOs.Budgets;
-
 public class BudgetAlertResponseDto
 {
     public long Id { get; set; }

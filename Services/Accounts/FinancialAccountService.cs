@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using SFM_BE.DTOs.Accounts;
 using SFM_BE.Entities;
@@ -15,32 +16,34 @@ public class FinancialAccountService : IFinancialAccountService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IGenericRepository<FinancialAccount> _accountRepo;
+    private readonly IGenericRepository<Transaction> _transactionRepo;
 
     public FinancialAccountService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _accountRepo = _unitOfWork.GetRepository<FinancialAccount>();
+        _transactionRepo = _unitOfWork.GetRepository<Transaction>();
     }
 
     public async Task<List<FinancialAccountResponseDto>> GetAccountsAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
     {
-        var accounts = await _accountRepo.Where(x => x.UserId == userId)
-            .DeleteFilter(filter)
+        return await _accountRepo
+            .Where(x => x.UserId == userId)
+            .ExcludeDeleted()
             .AsNoTracking()
+            .ProjectTo<FinancialAccountResponseDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
-
-        return _mapper.Map<List<FinancialAccountResponseDto>>(accounts);
     }
 
     public async Task<FinancialAccountResponseDto> GetAccountAsync(long userId, long id)
     {
-        var account = await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
-            .ExcludeDeleted()
-            .AsNoTracking()
-            .FirstOrDefaultAsync() ?? throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
-
-        return _mapper.Map<FinancialAccountResponseDto>(account);
+        return await _accountRepo.Where(x => x.UserId == userId && x.Id == id)
+           .ExcludeDeleted()
+           .AsNoTracking()
+           .ProjectTo<FinancialAccountResponseDto>(_mapper.ConfigurationProvider)
+           .FirstOrDefaultAsync()
+       ?? throw new NotFoundException("Financial account not found", "FINANCIAL_ACCOUNT_NOT_FOUND");
     }
 
     public async Task CreateAsync(long userId, CreateFinancialAccountDto dto)

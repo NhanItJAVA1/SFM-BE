@@ -34,7 +34,10 @@ public class MappingProfile : Profile
             .ForMember(x => x.CreatedAt, opt => opt.Ignore())
             .ForMember(x => x.DeletedAt, opt => opt.Ignore())
             .ForMember(x => x.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
-        CreateMap<FinancialAccount, FinancialAccountResponseDto>();
+        CreateMap<FinancialAccount, FinancialAccountResponseDto>()
+            .ForMember(x => x.CurrentBalance, opt => opt.MapFrom(x => x.InitialBalance + x.Transactions
+            .Where(t => t.DeletedAt == null && !t.IsExcluded)
+            .Sum(t => t.Type == TransactionType.Income ? t.Amount : -t.Amount)));
 
         //CATEGORIES
         CreateMap<CreateCategoryDto, Category>()

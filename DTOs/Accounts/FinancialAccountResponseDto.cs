@@ -22,4 +22,6 @@ public class FinancialAccountResponseDto
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public decimal CurrentBalance { get; set; }
 }

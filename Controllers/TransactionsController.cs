@@ -4,7 +4,6 @@ using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
 using SFM_BE.Services.BillScan;
 using SFM_BE.Services.Transactions;
-using SFM_BE.Services.Transactions.Impl;
 using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
@@ -24,15 +23,15 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions([FromQuery] DeleteType filter = DeleteType.NotDeleted)
+    public async Task<IActionResult> GetTransactions([FromQuery] long accountId, [FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
-        return Ok(await _transactionService.GetTransactionsAsync(GetUserId(), filter));
+        return Ok(await _transactionService.GetTransactionsAsync(GetUserId(), accountId, filter));
     }
 
     [HttpGet("{id:long}")]
-    public async Task<IActionResult> GetTransaction(long id)
+    public async Task<IActionResult> GetTransaction(long id, [FromQuery] long accountId)
     {
-        return Ok(await _transactionService.GetTransactionAsync(GetUserId(), id));
+        return Ok(await _transactionService.GetTransactionAsync(id, accountId, GetUserId()));
     }
 
     [HttpPost]

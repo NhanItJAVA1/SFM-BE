@@ -12,14 +12,14 @@ public class UserService : IUserService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IGenericRepository<Entities.User> _userRepo;
+    private readonly S3PresignedUrlService _s3Service;
 
-    public UserService(
-        IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public UserService(IUnitOfWork unitOfWork, IMapper mapper, S3PresignedUrlService s3Service)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _userRepo = _unitOfWork.GetRepository<Entities.User>();
+        _s3Service = s3Service;
     }
 
     public async Task<List<UserResponseDto>> GetUsersAsync()
@@ -29,7 +29,12 @@ public class UserService : IUserService
             .AsNoTracking()
             .ToListAsync();
 
-        return _mapper.Map<List<UserResponseDto>>(users);
+        var userDtos = _mapper.Map<List<UserResponseDto>>(users);
+
+        foreach (var userDto in userDtos)
+            await ApplyAvatarReadUrlAsync(userDto);
+
+        return userDtos;
     }
 
     public async Task<UserResponseDto> GetUserAsync(long id)
@@ -39,7 +44,10 @@ public class UserService : IUserService
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("User not found", "USER_NOT_FOUND");
 
-        return _mapper.Map<UserResponseDto>(user);
+        var userDto = _mapper.Map<UserResponseDto>(user);
+        await ApplyAvatarReadUrlAsync(userDto);
+
+        return userDto;
     }
 
     public async Task UpdateAsync(long id, UpdateUserDto dto)
@@ -63,5 +71,10 @@ public class UserService : IUserService
     {
         if (await _userRepo.Where(x => x.Email == email && x.Id != userId).AsNoTracking().AnyAsync())
             throw new ConflictException("Email already exists", "EMAIL_ALREADY_EXISTS");
+    }
+
+    private async Task ApplyAvatarReadUrlAsync(UserResponseDto user)
+    {
+        user.AvatarUrl = await _s3Service.CreateGetUrlFromStoredUrl(user.AvatarUrl);
     }
 }
