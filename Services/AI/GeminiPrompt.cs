@@ -1,4 +1,7 @@
-﻿namespace SFM_BE.Services.BillScan
+﻿using SFM_BE.DTOs.FinancialInsights;
+using System.Text.Json;
+
+namespace SFM_BE.Services.AI
 {
     public class GeminiPrompt
     {
@@ -60,6 +63,39 @@
                - Return JSON only.
                - No markdown, comments, explanations, or additional fields.
                """;
+        }
+
+        public static string BuildFinancialInsight(FinancialInsightDataDto data)
+        {
+            var json = JsonSerializer.Serialize(data);
+
+            return $$"""
+            Bạn là trợ lý phân tích tài chính cá nhân.
+
+            Dữ liệu dưới đây đã được backend tính toán chính xác.
+            Không tự tạo, thay đổi hoặc suy đoán số liệu không có trong dữ liệu.
+
+            Hãy phân tích:
+            - Thu nhập
+            - Chi tiêu
+            - So sánh với tháng trước
+            - Những thay đổi đáng chú ý
+
+            Trả về JSON theo đúng cấu trúc:
+            {    
+              "summary": "...",
+              "insights": [
+                {    
+                  "type": "...",
+                  "title": "...",
+                  "message": "..."
+                }
+              ]
+            }
+
+            Dữ liệu:
+            {{json}}
+            """;
         }
     }
 }

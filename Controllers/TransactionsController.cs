@@ -23,13 +23,13 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions([FromQuery] long accountId, [FromQuery] DeleteType filter = DeleteType.NotDeleted)
+    public async Task<IActionResult> GetTransactions([FromQuery] long? accountId, [FromQuery] DeleteType filter = DeleteType.NotDeleted)
     {
         return Ok(await _transactionService.GetTransactionsAsync(GetUserId(), accountId, filter));
     }
 
     [HttpGet("{id:long}")]
-    public async Task<IActionResult> GetTransaction(long id, [FromQuery] long accountId)
+    public async Task<IActionResult> GetTransaction(long id, [FromQuery] long? accountId)
     {
         return Ok(await _transactionService.GetTransactionAsync(id, accountId, GetUserId()));
     }

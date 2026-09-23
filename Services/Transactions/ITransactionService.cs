@@ -6,9 +6,9 @@ namespace SFM_BE.Services.Transactions;
 
 public interface ITransactionService
 {
-    Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long accountId, DeleteType filter = DeleteType.NotDeleted);
+    Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long? accountId, DeleteType filter = DeleteType.NotDeleted);
 
-    Task<TransactionResponseDto> GetTransactionAsync(long id, long accountId, long userId);
+    Task<TransactionResponseDto> GetTransactionAsync(long id, long? accountId, long userId);
 
     Task CreateAsync(long userId, CreateTransactionDto dto);
 

@@ -29,20 +29,21 @@ public class TransactionService : ITransactionService
         _financialAccountRepo = _unitOfWork.GetRepository<FinancialAccount>();
     }
 
-    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long accountId, DeleteType filter = DeleteType.NotDeleted)
+    public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long? accountId, DeleteType filter = DeleteType.NotDeleted)
     {
-        var transactions = await _transactionRepo.Where(x => x.AccountId == accountId && x.Account.UserId == userId)
-            .DeleteFilter(filter)
-            .AsNoTracking()
-            .ToListAsync();
-        
+        var transactions = await _transactionRepo.Where(x => x.Account.UserId == userId && (!accountId.HasValue || x.AccountId == accountId))
+           .DeleteFilter(filter)
+           .AsNoTracking()
+           .ToListAsync();
+
+
 
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
 
-    public async Task<TransactionResponseDto> GetTransactionAsync(long id, long accountId, long userId)
+    public async Task<TransactionResponseDto> GetTransactionAsync(long id, long? accountId, long userId)
     {
-        var transaction = await _transactionRepo.Where(x => x.AccountId == accountId && x.Id == id && x.Account.UserId == userId)
+        var transaction = await _transactionRepo.Where(x => (!accountId.HasValue || x.AccountId == accountId) && x.Id == id && x.Account.UserId == userId)
             .ExcludeDeleted()
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new NotFoundException("Transaction not found", "TRANSACTION_NOT_FOUND");
