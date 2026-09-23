@@ -17,5 +17,7 @@ public interface IBudgetService
 
     Task<BudgetProgressDto> GetProgressAsync(long userId, long budgetId);
 
+    Task<List<BudgetProgressDto>> GetProgressSummaryAsync(long userId, DeleteType filter = DeleteType.NotDeleted);
+
     Task<BudgetProgressDetailDto> GetProgressDetailAsync(long userId, long budgetId);
 }

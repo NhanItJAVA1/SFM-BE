@@ -116,6 +116,55 @@ public class BudgetService : IBudgetService
         return result;
     }
 
+    public async Task<List<BudgetProgressDto>> GetProgressSummaryAsync(long userId, DeleteType filter = DeleteType.NotDeleted)
+    {
+        var budgets = await _budgetRepo
+            .Where(x => x.UserId == userId)
+            .DeleteFilter(filter)
+            .Include(x => x.Category)
+            .AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+
+        if (budgets.Count == 0)
+            return [];
+
+        var minStartDate = budgets.Min(x => x.StartDate);
+        var maxEndDate = budgets.Max(x => x.EndDate);
+
+        var transactions = await _transactionRepo
+            .Where(x =>
+                x.Account.UserId == userId &&
+                x.Type == TransactionType.Expense &&
+                !x.IsExcluded &&
+                x.TransactionDate >= minStartDate &&
+                x.TransactionDate <= maxEndDate)
+            .ExcludeDeleted()
+            .AsNoTracking()
+            .Select(x => new
+            {
+                x.CategoryId,
+                x.TransactionDate,
+                x.Amount
+            })
+            .ToListAsync();
+
+        return budgets.Select(budget =>
+        {
+            var spentAmount = transactions
+                .Where(x =>
+                    x.TransactionDate >= budget.StartDate &&
+                    x.TransactionDate <= budget.EndDate &&
+                    (!budget.CategoryId.HasValue || x.CategoryId == budget.CategoryId))
+                .Sum(x => x.Amount);
+
+            var result = _mapper.Map<BudgetProgressDto>(budget);
+            ApplyProgressAmounts(result, budget.Amount, spentAmount, budget.AlertThreshold);
+
+            return result;
+        }).ToList();
+    }
+
     public async Task<BudgetProgressDetailDto> GetProgressDetailAsync(long userId, long budgetId)
     {
         var budget = await _budgetRepo
@@ -170,5 +219,17 @@ public class BudgetService : IBudgetService
             .ToList();
 
         return result;
+    }
+
+    private static void ApplyProgressAmounts(
+        BudgetProgressDto result,
+        decimal budgetAmount,
+        decimal spentAmount,
+        decimal alertThreshold)
+    {
+        result.SpentAmount = spentAmount;
+        result.RemainingAmount = budgetAmount - spentAmount;
+        result.UsedPercentage = budgetAmount > 0 ? Math.Round(spentAmount / budgetAmount * 100, 2) : 0;
+        result.IsAlert = result.UsedPercentage >= alertThreshold;
     }
 }

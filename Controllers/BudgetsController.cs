@@ -53,6 +53,9 @@ public class BudgetsController : ControllerBase
     public async Task<IActionResult> GetProgressAsync(long id)
         => Ok(await _budgetService.GetProgressAsync(GetUserId(), id));
 
+    [HttpGet("progress-summary")]
+    public async Task<IActionResult> GetProgressSummaryAsync([FromQuery] DeleteType filter = DeleteType.NotDeleted)
+        => Ok(await _budgetService.GetProgressSummaryAsync(GetUserId(), filter));
 
     [HttpGet("{id:long}/progress-detail")]
     public async Task<IActionResult> GetProgressDetailAsync(long id) 

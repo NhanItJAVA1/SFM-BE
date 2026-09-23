@@ -36,21 +36,15 @@ public class FinancialInsightService : IFinancialInsightService
         var previousEnd = currentStart;
 
         var currentTransactions = await _transactionRepo
-            .Where(x =>
-                x.Account.UserId == userId &&
-                !x.IsExcluded &&
-                x.TransactionDate >= currentStart &&
-                x.TransactionDate < currentEnd)
+            .Where(x => x.Account.UserId == userId && !x.IsExcluded && 
+            x.TransactionDate >= currentStart && x.TransactionDate < currentEnd)
             .ExcludeDeleted()
             .AsNoTracking()
             .ToListAsync();
 
         var previousTransactions = await _transactionRepo
-            .Where(x =>
-                x.Account.UserId == userId &&
-                !x.IsExcluded &&
-                x.TransactionDate >= previousStart &&
-                x.TransactionDate < previousEnd)
+            .Where(x => x.Account.UserId == userId && !x.IsExcluded &&
+                x.TransactionDate >= previousStart && x.TransactionDate < previousEnd)
             .ExcludeDeleted()
             .AsNoTracking()
             .ToListAsync();

@@ -2,6 +2,8 @@
 
 public class BudgetProgressDto
 {
+    public long Id { get; set; }
+
     public long BudgetId { get; set; }
 
     public long UserId { get; set; }
@@ -24,7 +26,13 @@ public class BudgetProgressDto
 
     public bool IsAlert { get; set; }
 
+    public bool IsRecurring { get; set; }
+
     public DateTime StartDate { get; set; }
 
     public DateTime EndDate { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 }
