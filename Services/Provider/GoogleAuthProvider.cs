@@ -32,10 +32,10 @@ public class GoogleAuthProvider : IExternalAuthProvider
 
     private static async Task<ExternalUserInfo> ValidateGoogleIdTokenAsync(string token)
     {
-        var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+        var clientIds = GetGoogleClientIds();
 
-        if (string.IsNullOrWhiteSpace(clientId))
-            throw new InvalidOperationException("GOOGLE_CLIENT_ID is not configured.");
+        if (clientIds.Count == 0)
+            throw new InvalidOperationException("At least one Google client id is required.");
 
         try
         {
@@ -43,7 +43,7 @@ public class GoogleAuthProvider : IExternalAuthProvider
                 token,
                 new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = [clientId]
+                    Audience = clientIds
                 });
 
             return new ExternalUserInfo
@@ -59,6 +59,22 @@ public class GoogleAuthProvider : IExternalAuthProvider
         {
             throw new UnauthorizedException("Invalid Google token", "INVALID_GOOGLE_TOKEN");
         }
+    }
+
+    private static IReadOnlyList<string> GetGoogleClientIds()
+    {
+        string?[] clientIds =
+        [
+            Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID"),
+            Environment.GetEnvironmentVariable("GOOGLE_ANDROID_CLIENT_ID"),
+            Environment.GetEnvironmentVariable("GOOGLE_IOS_CLIENT_ID")
+        ];
+
+        return clientIds
+            .Where(clientId => !string.IsNullOrWhiteSpace(clientId))
+            .Select(clientId => clientId!.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static bool IsJwt(string token) => System.Linq.Enumerable.Count(token, x => x == '.') == 2;
