@@ -37,6 +37,8 @@ public class AppDbContext : DbContext
 
     public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>();
 
+    public DbSet<FinancialHealthLog> FinancialHealthLogs { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -329,5 +331,24 @@ public class AppDbContext : DbContext
             new Category { Id = 12, Name = "Quà tặng", Type = CategoryType.Income, Icon = "gift", IsDefault = true, CreatedAt = seedDate },
             new Category { Id = 13, Name = "Thu nhập khác", Type = CategoryType.Income, Icon = "other", IsDefault = true, CreatedAt = seedDate }
         );
+
+        modelBuilder.Entity<FinancialHealthLog>(entity =>
+        {
+            // Đặt tên bảng rõ ràng trong Database (ví dụ: FinancialHealthLogs)
+            entity.ToTable("FinancialHealthLogs");
+
+            // Khóa chính là Guid
+            entity.HasKey(e => e.Id);
+
+            // Đánh index cho UserId để sau này truy vấn lịch sử của 1 user cực nhanh không bị chậm
+            entity.HasIndex(e => e.UserId);
+
+            // Cấu hình các cột lưu JSON (nếu dùng SQL Server, kiểu nvarchar(max) hoặc max là tự động)
+            entity.Property(e => e.FeaturesJson)
+                  .HasColumnType("nvarchar(max)"); // Hoặc loại bỏ dòng này nếu dùng PostgreSQL/MySQL
+
+            entity.Property(e => e.RecommendationsJson)
+                  .HasColumnType("nvarchar(max)");
+        });
     }
 }
