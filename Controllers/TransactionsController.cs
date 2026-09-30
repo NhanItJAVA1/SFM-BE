@@ -4,6 +4,7 @@ using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
 using SFM_BE.Services.BillScan;
 using SFM_BE.Services.Transactions;
+using SFM_BE.Services.Transactions.Impl;
 using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
@@ -14,12 +15,14 @@ namespace SFM_BE.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly ITransactionService _transactionService;
+    private readonly ITransactionExportService _transactionExportService;
     private readonly IBillScanService _billScanService;
 
-    public TransactionsController(ITransactionService transactionService, IBillScanService billScanService)
+    public TransactionsController(ITransactionService transactionService, IBillScanService billScanService, ITransactionExportService transactionExportService)
     {
         _transactionService = transactionService;
         _billScanService = billScanService;
+        _transactionExportService = transactionExportService;
     }
 
     [HttpGet]
@@ -68,6 +71,14 @@ public class TransactionsController : ControllerBase
     public async Task<IActionResult> GetCategorySpendingAsync([FromQuery] int? month, [FromQuery] int? year, [FromQuery] int? compareMonth, [FromQuery] int? compareYear)
     {
         return Ok(await _transactionService.GetCategorySpendingAsync(GetUserId(), month, year, compareMonth, compareYear));
+    }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportExcel([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] long? accountId)
+    {
+        var file = await _transactionExportService.ExportExcelAsync(GetUserId(), fromDate, toDate, accountId);
+
+        return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"transactions-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx");
     }
 
     private long GetUserId()
