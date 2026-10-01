@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SFM_BE.DTOs.Transactions
 {
     public class AiAnalyzeRequestDto
@@ -6,7 +8,25 @@ namespace SFM_BE.DTOs.Transactions
         public List<AiTransactionItemDto> Transactions { get; set; } = new();
         public List<AiBudgetItemDto> Budgets { get; set; } = new();
     }
+    public class AiAnalyzeResponseDto
+    {
+        [JsonPropertyName("user_id")]
+        public long UserId { get; set; }
+        [JsonPropertyName("health_label")]
+        public int HealthLabel { get; set; }
+        [JsonPropertyName("health_status")]
+        public string HealthStatus { get; set; } = string.Empty;
+        public Dictionary<string, object> Features { get; set; } = new();
+        public List<AnomaliesResultDto> Anomalies { get; set; } = new();
+        public List<AiRecommendationItemDto> Recommendations { get; set; } = new();
+    }
 
+    public class AnomaliesResultDto
+    {
+        public long TransactionId { get; set; }
+        public bool IsAnomaly { get; set; }
+        public double Score { get; set; }
+    }
     public class AiTransactionItemDto
     {
         public decimal Amount { get; set; }
@@ -20,15 +40,6 @@ namespace SFM_BE.DTOs.Transactions
         public string Category { get; set; } = string.Empty;
         public decimal Limit { get; set; }
         public decimal Spent { get; set; }
-    }
-
-    public class AiAnalyzeResponseDto
-    {
-        public int UserId { get; set; }
-        public int HealthLabel { get; set; }
-        public string HealthStatus { get; set; } = string.Empty;
-        public Dictionary<string, object> Features { get; set; } = new();
-        public List<AiRecommendationItemDto> Recommendations { get; set; } = new();
     }
 
     public class AiRecommendationItemDto

@@ -6,7 +6,7 @@ public class FinancialHealthLog
 {
     [Key]
 public Guid Id { get; set; } = Guid.NewGuid();
-public int UserId { get; set; }
+public long UserId { get; set; }
 public int HealthLabel { get; set; }
 public string HealthStatus { get; set; } = string.Empty;
 

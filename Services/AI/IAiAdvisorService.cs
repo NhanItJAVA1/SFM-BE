@@ -5,6 +5,6 @@ namespace SFM_BE.Services.AI
 {
     public interface IAiAdvisorService
     {
-        Task<AiAnalyzeResponseDto?> GetFinancialAnalysisAsync(AiAnalyzeRequestDto request);
+        Task<AiAnalyzeResponseDto?> GetFinancialAnalysisAsync(long userId, int periodDays = 90);
     }
 }

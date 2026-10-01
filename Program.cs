@@ -114,6 +114,7 @@ builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddScoped<IAiAdvisorService, AiAdvisorService>();
 
 builder.Services.AddSingleton<IAmazonS3>(_ =>
     new AmazonS3Client(

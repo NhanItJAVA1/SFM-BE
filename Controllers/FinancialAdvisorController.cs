@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using SFM_BE.Services.AI;
-using SFM_BE.Contexts;
-using SFM_BE.DTOs.Transactions;
+using System.Security.Claims;
 
 [Authorize] // Đảm bảo đã đăng nhập JWT
 [ApiController]
@@ -11,39 +9,30 @@ using SFM_BE.DTOs.Transactions;
 public class FinancialAdvisorController : ControllerBase
 {
     private readonly IAiAdvisorService _aiService;
-    private readonly AppDbContext _context; // DbContext của bạn
 
-    public FinancialAdvisorController(IAiAdvisorService aiService, AppDbContext context)
+    public FinancialAdvisorController(IAiAdvisorService aiAdvisorService)
     {
-        _aiService = aiService;
-        _context = context;
+        _aiService = aiAdvisorService;
     }
 
     [HttpPost("analyze")]
-    public async Task<IActionResult> AnalyzeUserFinance([FromBody] AiAnalyzeRequestDto request)
+    public async Task<IActionResult> Analyze()
     {
-        // 1. Gọi sang FastAPI lấy kết quả phân tích
-        var aiResult = await _aiService.GetFinancialAnalysisAsync(request);
-        if (aiResult == null)
+        // 1. Tự động trích xuất UserId từ Token JWT của người đang đăng nhập
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out long userId))
         {
-            return StatusCode(503, new { message = "Hệ thống AI tạm thời gián đoạn." });
+            return Unauthorized("Không tìm thấy thông tin định danh của người dùng từ Token.");
         }
 
-        // 2. Lưu kết quả vào Database của C# để làm lịch sử
-        var log = new SFM_BE.Entities.FinancialHealthLog
-        {
-            UserId = request.UserId,
-            HealthLabel = aiResult.HealthLabel,
-            HealthStatus = aiResult.HealthStatus,
-            FeaturesJson = JsonSerializer.Serialize(aiResult.Features),
-            RecommendationsJson = JsonSerializer.Serialize(aiResult.Recommendations),
-            CreatedAt = DateTime.UtcNow
-        };
+        // 2. Gọi service xử lý với đúng ID của họ
+        var analysisResult = await _aiService.GetFinancialAnalysisAsync(userId);
 
-        _context.FinancialHealthLogs.Add(log);
-        await _context.SaveChangesAsync();
+        if (analysisResult == null)
+            return StatusCode(500, "Không thể kết nối hoặc xử lý dữ liệu từ AI Service.");
 
-        // 3. Trả kết quả về cho Frontend
-        return Ok(aiResult);
+        return Ok(analysisResult);
     }
 }
