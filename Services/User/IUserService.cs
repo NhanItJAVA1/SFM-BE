@@ -1,3 +1,4 @@
+using SFM_BE.DTOs.Auth;
 using SFM_BE.DTOs.Users;
 
 namespace SFM_BE.Services.User;
@@ -11,4 +12,5 @@ public interface IUserService
     Task UpdateAsync(long id, UpdateUserDto dto);
 
     Task DeleteAsync(long id);
+    Task ResetAccountAsync(long userId, ReauthenticationDto auth);
 }

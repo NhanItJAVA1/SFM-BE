@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using SFM_BE.DTOs.Auth;
 using SFM_BE.DTOs.Users;
 using SFM_BE.Services;
 using SFM_BE.Services.User;
+using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
 
@@ -45,10 +47,26 @@ public class UsersController : ControllerBase
             dto.ContentType));
     }
 
+    [HttpDelete("me/data")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ResetAccount([FromBody] ReauthenticationDto auth)
+    {
+        await _userService.ResetAccountAsync(GetUserId(), auth);
+        return NoContent();
+    }
+
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> DeleteUser(long id)
     {
         await _userService.DeleteAsync(id);
         return NoContent();
+    }
+
+    private long GetUserId()
+    {
+        var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
     }
 }
