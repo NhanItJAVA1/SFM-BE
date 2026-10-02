@@ -4,14 +4,13 @@ using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
 using SFM_BE.Services.BillScan;
 using SFM_BE.Services.Transactions;
-using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/transactions")]
-public class TransactionsController : ControllerBase
+public class TransactionsController : BaseController
 {
     private readonly ITransactionService _transactionService;
     private readonly IBillScanService _billScanService;
@@ -69,12 +68,4 @@ public class TransactionsController : ControllerBase
     {
         return Ok(await _transactionService.GetCategorySpendingAsync(GetUserId(), month, year, compareMonth, compareYear));
     }
-
-    private long GetUserId()
-    {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
-    }
-
-
 }

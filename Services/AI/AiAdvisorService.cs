@@ -1,8 +1,11 @@
-using Amazon.Runtime.Internal.Util;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using SFM_BE.Contexts;
 using SFM_BE.DTOs.Transactions;
 using SFM_BE.Entities;
+using SFM_BE.Enums;
+using SFM_BE.Extensions;
+using SFM_BE.Repositories.Generic;
+using SFM_BE.Repositories.UnitOfWork;
 using System.Text.Json;
 
 namespace SFM_BE.Services.AI;
@@ -10,13 +13,24 @@ namespace SFM_BE.Services.AI;
 public class AiAdvisorService : IAiAdvisorService
 {
     private readonly HttpClient _httpClient;
-    private readonly AppDbContext _context;
+    //private readonly AppDbContext _context; ===> Không gọi trực tiếp DbContext trong service, mà nên dùng repository để tách biệt
+    private readonly IMapper _mapper;
+    private readonly IGenericRepository<Transaction> _transactionRepo;
+    private readonly IGenericRepository<Budget> _budgetRepo;
+    private readonly IGenericRepository<FinancialAccount> _accountRepo;
+    private readonly IGenericRepository<FinancialHealthLog> _financialHealthLogRepo;
+    private readonly IUnitOfWork _unitOfWork; // <== Dùng UnitOfWork để quản lý các repository
     private readonly ILogger<AiAdvisorService> _logger;
 
-    public AiAdvisorService(HttpClient httpClient, AppDbContext context, ILogger<AiAdvisorService> logger)
+    public AiAdvisorService(HttpClient httpClient, IUnitOfWork unitOfWork, IMapper mapper,  ILogger<AiAdvisorService> logger)
     {
         _httpClient = httpClient;
-        _context = context;
+        _mapper = mapper;
+        _unitOfWork = unitOfWork; // <== Dùng UnitOfWork để quản lý các repository
+        _transactionRepo = _unitOfWork.GetRepository<Transaction>();
+        _budgetRepo = _unitOfWork.GetRepository<Budget>();
+        _accountRepo = _unitOfWork.GetRepository<FinancialAccount>();
+        _financialHealthLogRepo = _unitOfWork.GetRepository<FinancialHealthLog>();
         _logger = logger;
     }
 
@@ -26,17 +40,22 @@ public class AiAdvisorService : IAiAdvisorService
         var cutoffDate = DateTime.UtcNow.AddDays(-periodDays);
 
         // 1. Lấy dữ liệu trực tiếp từ DB của C# lên (Đã bổ sung .Include để tránh null navigation)
-        var transactions = await _context.Transactions
-            .Include(t => t.Category) // <--- QUAN TRỌNG: Phải có Include để tải thông tin Category
-            .Where(t => t.Account.UserId == userId && t.TransactionDate >= cutoffDate && t.DeletedAt == null)
+        var transactions = await _transactionRepo
+             .Where(t => t.Account.UserId == userId && t.TransactionDate >= cutoffDate)
+             .DeleteFilter(DeleteType.NotDeleted)
+             .Include(t => t.Category) //<-- Include Category để tránh null khi mapping sang payload
+             .AsNoTracking()
+             .ToListAsync();
+
+        var budgets = await _budgetRepo
+            .Where(b => b.UserId == userId)
+            .DeleteFilter(DeleteType.NotDeleted)
+            .AsNoTracking()
             .ToListAsync();
 
-        var budgets = await _context.Budgets
-            .Where(b => b.UserId == userId && b.DeletedAt == null)
-            .ToListAsync();
-
-        var accounts = await _context.FinancialAccounts
+        var accounts = await _accountRepo
             .Where(a => a.UserId == userId && a.IsActive)
+            .AsNoTracking()
             .ToListAsync();
 
         // 2. Đóng gói payload gửi sang Python
@@ -62,7 +81,7 @@ public class AiAdvisorService : IAiAdvisorService
                 // Tính tổng tiền chi tiêu (Expense) cho category tương ứng VÀ nằm trong khoảng thời gian của budget
                 spent = transactions
                         .Where(t => t.CategoryId == b.CategoryId
-                            && t.Type.ToString() == "Expense"
+                            && t.Type.ToString() == TransactionType.Expense.ToString() // <--- có Enums
                             && t.TransactionDate >= b.StartDate
                             && t.TransactionDate <= b.EndDate)
                         .Sum(t => t.Amount)
@@ -106,8 +125,10 @@ public class AiAdvisorService : IAiAdvisorService
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.FinancialHealthLogs.Add(log);
-        await _context.SaveChangesAsync();
+        //_context.FinancialHealthLogs.Add(log);
+        //await _context.SaveChangesAsync();
+        await _financialHealthLogRepo.CreateAsync(log);
+        await _unitOfWork.SaveChangesAsync();
 
         // 6. Trả kết quả về cho Controller
         return result;
