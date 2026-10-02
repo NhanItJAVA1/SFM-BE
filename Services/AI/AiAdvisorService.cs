@@ -99,8 +99,7 @@ public class AiAdvisorService : IAiAdvisorService
         _logger.LogInformation("Payload gửi sang Python: " + JsonSerializer.Serialize(payload));
 
         // 3. Gọi sang service Python FastAPI qua HTTP POST
-        var response = await _httpClient.PostAsJsonAsync("http://host.docker.internal:8000/api/analyze", payload);
-
+        var response = await _httpClient.PostAsJsonAsync("/api/analyze", payload);
 
         if (!response.IsSuccessStatusCode)
         {

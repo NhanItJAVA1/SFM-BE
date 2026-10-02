@@ -114,7 +114,12 @@ builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-builder.Services.AddScoped<IAiAdvisorService, AiAdvisorService>();
+builder.Services.AddHttpClient<IAiAdvisorService, AiAdvisorService>(client =>
+{
+    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("AI_SERVICE_URL")
+        ?? throw new InvalidOperationException("AI_SERVICE_URL is missing"));
+});
+
 
 builder.Services.AddSingleton<IAmazonS3>(_ =>
     new AmazonS3Client(

@@ -44,6 +44,8 @@ services:
       GOOGLE_IOS_CLIENT_ID: ${GOOGLE_IOS_CLIENT_ID}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
 
+      AI_SERVICE_URL: ${AI_SERVICE_URL}
+
     depends_on:
       - sqlserver
       - redis
