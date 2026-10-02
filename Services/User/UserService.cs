@@ -83,9 +83,7 @@ public class UserService : IUserService
 
     public async Task DeleteAsync(long id)
     {
-        if (await _userRepo.UpdateAsync(
-        x => x.Id == id && x.DeletedAt == null,
-        s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
+        if (await _userRepo.UpdateAsync(x => x.Id == id && x.DeletedAt == null, s => s.SetProperty(x => x.DeletedAt, DateTime.UtcNow)) == 0)
             throw new NotFoundException("User not found", "USER_NOT_FOUND");
     }
 

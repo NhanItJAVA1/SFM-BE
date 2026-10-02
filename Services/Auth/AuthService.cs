@@ -107,18 +107,10 @@ public class AuthService : IAuthService
     }
 
     private IExternalAuthProvider GetProvider(ExternalLoginDto dto)
-    {
-        var provider = _providers.FirstOrDefault(x => x.Provider == dto.Provider);
+        => _providers.FirstOrDefault(x => x.Provider == dto.Provider)
+            ?? throw new BadRequestException("Unsupported authentication provider", "UNSUPPORTED_AUTH_PROVIDER");
 
-        if (provider == null)
-            throw new BadRequestException("Unsupported authentication provider", "UNSUPPORTED_AUTH_PROVIDER");
-
-        return provider;
-    }
-
-    private async Task<UserEntity> FindOrCreateExternalUserAsync(
-        ExternalLoginDto dto,
-        ExternalUserInfo externalUser)
+    private async Task<UserEntity> FindOrCreateExternalUserAsync(ExternalLoginDto dto, ExternalUserInfo externalUser)
     {
         var externalLogin = await FindExternalLoginAsync(dto, externalUser.ProviderUserId);
 
@@ -131,24 +123,16 @@ public class AuthService : IAuthService
         return await LinkExternalLoginAsync(user, dto, externalUser);
     }
 
-    private async Task<ExternalLogin?> FindExternalLoginAsync(
-        ExternalLoginDto dto,
-        string providerUserId)
-    {
-        return await _externalLoginRepo.All()
+    private async Task<ExternalLogin?> FindExternalLoginAsync(ExternalLoginDto dto, string providerUserId)
+        => await _externalLoginRepo.All()
             .Include(x => x.User)
             .ThenInclude(x => x.Role)
-            .FirstOrDefaultAsync(x =>
-                x.Provider == dto.Provider &&
-                x.ProviderUserId == providerUserId);
-    }
+            .FirstOrDefaultAsync(x => x.Provider == dto.Provider && x.ProviderUserId == providerUserId);
 
     private async Task<UserEntity?> FindUserByEmailAsync(string email)
-    {
-        return await _userRepo.Where(x => x.Email == email)
+        => await _userRepo.Where(x => x.Email == email)
             .Include(x => x.Role)
             .FirstOrDefaultAsync();
-    }
 
     private async Task<UserEntity> CreateExternalUserAsync(ExternalUserInfo externalUser)
     {
@@ -188,12 +172,10 @@ public class AuthService : IAuthService
         catch (DbUpdateException ex)
         {
             DetachEntries(ex);
+            var existingLogin = await FindExternalLoginAsync(dto, externalUser.ProviderUserId)
+                ?? throw new ConflictException("External login could not be linked", "EXTERNAL_LOGIN_CONFLICT");
 
-            var existingLogin = await FindExternalLoginAsync(dto, externalUser.ProviderUserId);
-            if (existingLogin != null)
-                return existingLogin.User;
-
-            throw new ConflictException("External login could not be linked", "EXTERNAL_LOGIN_CONFLICT");
+            return existingLogin.User;
         }
     }
 
@@ -223,59 +205,38 @@ public class AuthService : IAuthService
     {
         var userDto = _mapper.Map<UserResponseDto>(user);
 
-        userDto.AvatarUrl = !string.IsNullOrWhiteSpace(userDto.AvatarUrl) ? await _s3Service.CreateGetUrlFromStoredUrl(userDto.AvatarUrl) : null;
+        if (!string.IsNullOrWhiteSpace(userDto.AvatarUrl))
+            userDto.AvatarUrl = await _s3Service.CreateGetUrlFromStoredUrl(userDto.AvatarUrl);
 
         return userDto;
     }
 
     private string CreateAccessToken(UserEntity user)
-    {
-        return _jwtService.GenerateToken(user);
-    }
+        => _jwtService.GenerateToken(user);
 
     private async Task EnsureUsernameAvailableAsync(string username)
     {
-        var exists = await _userRepo.Where(u => u.Username == username)
-            .AsNoTracking()
-            .AnyAsync();
-
-        if (exists)
+        if (await _userRepo.Where(u => u.Username == username).AsNoTracking().AnyAsync())
             throw new ConflictException("Username already exists", "USERNAME_ALREADY_EXISTS");
     }
 
     private async Task EnsureEmailAvailableAsync(string email)
     {
-        var exists = await _userRepo.Where(u => u.Email == email)
-            .AsNoTracking()
-            .AnyAsync();
 
-        if (exists)
+        if (await _userRepo.Where(u => u.Email == email).AsNoTracking().AnyAsync())
             throw new ConflictException("Email already exists", "EMAIL_ALREADY_EXISTS");
     }
 
     private async Task<Role> GetDefaultUserRoleAsync()
-    {
-        var userRole = await _roleRepo.Where(r => r.Name == UserRole.User)
-            .FirstOrDefaultAsync();
-
-        if (userRole == null)
-            throw new AppException("Default user role not found", 500, "DEFAULT_ROLE_NOT_FOUND");
-
-        return userRole;
-    }
+        => await _roleRepo.Where(r => r.Name == UserRole.User)
+            .FirstOrDefaultAsync() ?? throw new AppException("Default user role not found", 500, "DEFAULT_ROLE_NOT_FOUND");
 
     private static bool IsPasswordValid(string password, string? passwordHash)
-    {
-        return !string.IsNullOrWhiteSpace(passwordHash)
+        => !string.IsNullOrWhiteSpace(passwordHash)
             && BCrypt.Net.BCrypt.Verify(password, passwordHash);
-    }
 
     private static bool IsRefreshTokenActive(RefreshToken? refreshToken)
-    {
-        return refreshToken != null
-            && refreshToken.RevokeAt == null
-            && refreshToken.ExpiresAt >= DateTime.UtcNow;
-    }
+        => refreshToken != null && refreshToken.RevokeAt == null && refreshToken.ExpiresAt >= DateTime.UtcNow;
 
     private static void DetachEntries(DbUpdateException exception)
     {

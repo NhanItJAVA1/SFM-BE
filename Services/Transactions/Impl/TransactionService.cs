@@ -36,8 +36,6 @@ public class TransactionService : ITransactionService
            .AsNoTracking()
            .ToListAsync();
 
-
-
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
 
