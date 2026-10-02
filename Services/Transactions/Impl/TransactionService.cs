@@ -67,6 +67,8 @@ public class TransactionService : ITransactionService
         //    financialAccount.InitialBalance -= dto.Amount;
         //else
         //    financialAccount.InitialBalance += dto.Amount;
+        if (!transaction.CategoryId.HasValue)
+            transaction.CategoryId = dto.Type == TransactionType.Expense ? DefaultCategoryIds.OtherExpense : DefaultCategoryIds.OtherIncome;
 
         await _transactionRepo.CreateAsync(transaction);
         var affected =  await _unitOfWork.SaveChangesAsync();
@@ -219,6 +221,12 @@ public class TransactionService : ITransactionService
             Start = period.Start,
             End = period.End
         };
+    }
+
+    public static class DefaultCategoryIds
+    {
+        public const long OtherExpense = 8;
+        public const long OtherIncome = 13;
     }
 
 }

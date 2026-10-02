@@ -113,6 +113,7 @@ builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 builder.Services.AddScoped<IBillScanService, GeminiBillScanService>();
 builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
+builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<IAdminService, AdminService>();

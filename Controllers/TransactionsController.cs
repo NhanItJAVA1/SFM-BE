@@ -13,12 +13,14 @@ namespace SFM_BE.Controllers;
 public class TransactionsController : BaseController
 {
     private readonly ITransactionService _transactionService;
+    private readonly ITransactionExportService _transactionExportService;
     private readonly IBillScanService _billScanService;
 
-    public TransactionsController(ITransactionService transactionService, IBillScanService billScanService)
+    public TransactionsController(ITransactionService transactionService, IBillScanService billScanService, ITransactionExportService transactionExportService)
     {
         _transactionService = transactionService;
         _billScanService = billScanService;
+        _transactionExportService = transactionExportService;
     }
 
     [HttpGet]
@@ -68,4 +70,20 @@ public class TransactionsController : BaseController
     {
         return Ok(await _transactionService.GetCategorySpendingAsync(GetUserId(), month, year, compareMonth, compareYear));
     }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportExcel([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] long? accountId)
+    {
+        var file = await _transactionExportService.ExportExcelAsync(GetUserId(), fromDate, toDate, accountId);
+
+        return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"transactions-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx");
+    }
+
+    private long GetUserId()
+    {
+        var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
+    }
+
+
 }
