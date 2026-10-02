@@ -12,6 +12,7 @@ using SFM_BE.Repositories.Generic;
 using SFM_BE.Repositories.UnitOfWork;
 using SFM_BE.Services;
 using SFM_BE.Services.Accounts;
+using SFM_BE.Services.Admin;
 using SFM_BE.Services.AI;
 using SFM_BE.Services.Auth;
 using SFM_BE.Services.BillScan;
@@ -115,6 +116,13 @@ builder.Services.AddScoped<IFinancialInsightService, FinancialInsightService>();
 builder.Services.AddScoped<ITransactionExportService, TransactionExportService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddHttpClient<IAiAdvisorService, AiAdvisorService>(client =>
+{
+    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("AI_SERVICE_URL")
+        ?? throw new InvalidOperationException("AI_SERVICE_URL is missing"));
+});
+
 
 builder.Services.AddSingleton<IAmazonS3>(_ =>
     new AmazonS3Client(

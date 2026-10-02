@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SFM_BE.Contexts;
 
@@ -11,9 +12,11 @@ using SFM_BE.Contexts;
 namespace SFM_BE.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260929153628_AddFinancialHealthLogTable")]
+    partial class AddFinancialHealthLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,6 +165,125 @@ namespace SFM_BE.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "food",
+                            IsDefault = true,
+                            Name = "Ăn uống",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "transport",
+                            IsDefault = true,
+                            Name = "Di chuyển",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "shopping",
+                            IsDefault = true,
+                            Name = "Mua sắm",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "bill",
+                            IsDefault = true,
+                            Name = "Hóa đơn",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "entertainment",
+                            IsDefault = true,
+                            Name = "Giải trí",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "health",
+                            IsDefault = true,
+                            Name = "Sức khỏe",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "education",
+                            IsDefault = true,
+                            Name = "Giáo dục",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 8L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "other",
+                            IsDefault = true,
+                            Name = "Khác",
+                            Type = "Expense"
+                        },
+                        new
+                        {
+                            Id = 9L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "salary",
+                            IsDefault = true,
+                            Name = "Lương",
+                            Type = "Income"
+                        },
+                        new
+                        {
+                            Id = 10L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "bonus",
+                            IsDefault = true,
+                            Name = "Thưởng",
+                            Type = "Income"
+                        },
+                        new
+                        {
+                            Id = 11L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "investment",
+                            IsDefault = true,
+                            Name = "Đầu tư",
+                            Type = "Income"
+                        },
+                        new
+                        {
+                            Id = 12L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "gift",
+                            IsDefault = true,
+                            Name = "Quà tặng",
+                            Type = "Income"
+                        },
+                        new
+                        {
+                            Id = 13L,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "other",
+                            IsDefault = true,
+                            Name = "Thu nhập khác",
+                            Type = "Income"
+                        });
                 });
 
             modelBuilder.Entity("SFM_BE.Entities.ExternalLogin", b =>
@@ -277,8 +399,8 @@ namespace SFM_BE.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

@@ -4,15 +4,13 @@ using SFM_BE.DTOs.Transactions;
 using SFM_BE.Enums;
 using SFM_BE.Services.BillScan;
 using SFM_BE.Services.Transactions;
-using SFM_BE.Services.Transactions.Impl;
-using System.Security.Claims;
 
 namespace SFM_BE.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/transactions")]
-public class TransactionsController : ControllerBase
+public class TransactionsController : BaseController
 {
     private readonly ITransactionService _transactionService;
     private readonly ITransactionExportService _transactionExportService;
