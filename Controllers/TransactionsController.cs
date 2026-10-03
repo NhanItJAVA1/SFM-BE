@@ -79,11 +79,4 @@ public class TransactionsController : BaseController
         return File(file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"transactions-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx");
     }
 
-    private long GetUserId()
-    {
-        var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return long.TryParse(value, out var userId) ? userId : throw new UnauthorizedAccessException("User id is missing from token.");
-    }
-
-
 }

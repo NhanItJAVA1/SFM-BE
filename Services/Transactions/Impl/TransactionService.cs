@@ -32,11 +32,10 @@ public class TransactionService : ITransactionService
     public async Task<List<TransactionResponseDto>> GetTransactionsAsync(long userId, long? accountId, DeleteType filter = DeleteType.NotDeleted)
     {
         var transactions = await _transactionRepo.Where(x => x.Account.UserId == userId && (!accountId.HasValue || x.AccountId == accountId))
+           .Include(x => x.Category)
            .DeleteFilter(filter)
            .AsNoTracking()
            .ToListAsync();
-
-
 
         return _mapper.Map<List<TransactionResponseDto>>(transactions);
     }
@@ -149,13 +148,18 @@ public class TransactionService : ITransactionService
 
     private async Task<CategorySpendingResponseDto> BuildCategorySpendingResponseAsync(long userId, PeriodRange currentPeriod, PeriodRange comparePeriod, List<CategoryAggregate> currentData, List<CategoryAggregate> compareData)
     {
-        var currentMap = currentData.ToDictionary(x => x.CategoryId);
-        var compareMap = compareData.ToDictionary(x => x.CategoryId);
+        // Sửa lại đoạn ToDictionary để xử lý an toàn với kiểu long? (tránh lỗi CS8714)
+        // Nếu CategoryId có thể null, ta gán một giá trị mặc định (ví dụ: 0 hoặc -1) hoặc dùng ToLookup/GroupBy
+        var currentMap = currentData
+            .Where(x => x.CategoryId.HasValue)
+            .ToDictionary(x => x.CategoryId!.Value);
+
+        var compareMap = compareData
+            .Where(x => x.CategoryId.HasValue)
+            .ToDictionary(x => x.CategoryId!.Value);
 
         var categoryIds = currentMap.Keys
             .Union(compareMap.Keys)
-            .Where(x => x.HasValue)
-            .Select(x => x!.Value)
             .ToList();
 
         var categories = await _categoryRepo
@@ -177,8 +181,8 @@ public class TransactionService : ITransactionService
 
                 Category? category = null;
 
-                if (categoryId.HasValue)
-                    categories.TryGetValue(categoryId.Value, out category);
+                if (categoryId > 0)
+                    categories.TryGetValue(categoryId, out category);
 
                 return new CategorySpendingDto
                 {
@@ -192,7 +196,8 @@ public class TransactionService : ITransactionService
                     Percentage = totalAmount == 0 ? 0 : Math.Round(amount / totalAmount * 100, 2),
 
                     ChangePercentage =  CalculateChange(amount, compareAmount), 
-                    TransactionCount = current?.Count ?? 0, IsUncategorized = !categoryId.HasValue
+                    TransactionCount = current?.Count ?? 0, 
+                    IsUncategorized = categoryId == 0
                 };
             })
             .Where(x => x.Amount > 0 || x.CompareAmount > 0)

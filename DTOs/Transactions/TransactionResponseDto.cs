@@ -11,6 +11,8 @@ public class TransactionResponseDto
 
     public long? CategoryId { get; set; }
 
+    public string CategoryName { get; set; } = string.Empty;
+
     public TransactionType Type { get; set; }
 
     public decimal Amount { get; set; }
